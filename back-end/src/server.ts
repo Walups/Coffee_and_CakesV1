@@ -1,7 +1,9 @@
 import express, { Request, Response } from 'express';
+import pedidoRoutes from './routes/pedidoRoutes'
 
 const app = express();
 app.use(express.json());
+app.use('/pedidos', pedidoRoutes);
 
 app.get('/', (req: Request, res: Response) => {
     res.json({ 
