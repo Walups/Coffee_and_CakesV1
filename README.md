@@ -30,6 +30,6 @@ Em construção ...
 ### Commits
 * Commit - e4d0208: Decidi migrar o backend para o Nodejs com typescript, depois de analisar o todo do projeto e o prazo, entendi que seguir o plano inicial, backend em C#, causaria um cenário de overengeneer no projeto, migrar para Node simplificaria a comunicação com o frontend, me polpando de aprender Docker e outros conceitos que não permitiriam entregar a aplicação no prazo. 
 
-Aqui fiz toda a configuração do boilerplate, comunicação inicial com o banco de dados e a configuração segura das chaves do banco.
+  Aqui fiz toda a configuração do boilerplate, comunicação inicial com o banco de dados e a configuração segura das chaves do banco.
 
 
