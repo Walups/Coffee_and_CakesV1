@@ -1,4 +1,4 @@
-Bem vindo ao Coffee and Cakes
+# Bem vindo ao Coffee and Cakes!!!
 
 ## Sobre o projeto
 Essa aplicação se trata de uma aplicação de ecomerce para um food services, a ideia faz parte de um projeto de Engenharia de Software proposto pela universidade.
