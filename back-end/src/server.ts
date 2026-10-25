@@ -1,10 +1,12 @@
 import 'dotenv/config';
 import express, { Request, Response } from 'express';
-import pedidoRoutes from './routes/pedidoRoutes'
+import pedidoRoutes from './routes/pedidoRoutes';
+import produtoRoutes from './routes/produtoRoutes';
 
 const app = express();
 app.use(express.json());
 app.use('/pedidos', pedidoRoutes);
+app.use('/produtos', produtoRoutes);
 
 app.get('/', (req: Request, res: Response) => {
     res.json({ 
