@@ -8,7 +8,7 @@ export interface CategoriaXProduto{
 
 }
 
-export const CategoriaXProdutoController = {
+export const categoriaXProdutoController = {
 
     async create (req: Request, res: Response){
         try{
@@ -22,7 +22,29 @@ export const CategoriaXProdutoController = {
         }
     },
 
-    //criar um list por produto e por categoria
+    async listByProduto (req: Request, res: Response){
+        try{
+            const {id_produto} = req.params;
+            const {data, error} = await supabase.from('categoria_X_produto').select('*').eq('id_produto', id_produto);
+
+            if(error) return res.status(400).json({erro: "Categoria por produto não encontrado"});
+            return res.status(200).json(data);
+        }catch(erro){
+            return res.status(500).json({erro: "Falha interna"});
+        }
+    },
+
+    async listByCategoria (req: Request, res: Response){
+        try{
+            const {id_categoria} = req.params;
+            const {data, error} = await supabase.from('categoria_X_produto').select('*').eq('id_categoria', id_categoria);
+
+            if(error) return res.status(400).json({erro: "Categoria por produto não encontrado"});
+            return res.status(200).json(data);
+        }catch(erro){
+            return res.status(500).json({erro: "Falha interna"});
+        }
+    },
 
     async searchID (req: Request, res: Response){
         try{
