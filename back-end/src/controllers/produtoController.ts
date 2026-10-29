@@ -10,7 +10,7 @@ export interface Produto{
     preco: number;
     desconto_preco: number;
     descricao?: string;
-    img: string;
+    imagem_produto: string;
 }
 
 export const produtoController = {
@@ -24,7 +24,7 @@ export const produtoController = {
             }
 
             const erroValidacao = produtoValidators(req.body)
-            if(erroValidacao) return res.status(400).json({erro: erroValidacao});
+            if(erroValidacao){return res.status(400).json({erro: erroValidacao})};
 
             const novoProduto = req.body as Produto;
             const {data, error} = await supabase.from('produto').insert([novoProduto]).select();

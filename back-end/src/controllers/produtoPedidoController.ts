@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { supabase } from "../config/supabase";
+import { produtoPedidoValidators } from "../utils/produtoPedidoValidators";
 
 export interface ProdutoPedido{
 
@@ -16,6 +17,12 @@ export const produtoPedidoController = {
 
     async create (res: Response, req: Request){
         try{
+            const {quant} = req.body;
+            if(!quant){return res.status(400).json({erro: "quantidade obrigatória"})}
+
+            const erroValidacao = produtoPedidoValidators(req.body);
+            if (erroValidacao){return res.status(400).json({erro: erroValidacao})}
+
             const novoProdutoPedido = req.body as ProdutoPedido;
             const {data, error} = await supabase.from('produto_pedido').insert([novoProdutoPedido]).select();
 
@@ -51,6 +58,9 @@ export const produtoPedidoController = {
 
     async update (req: Request, res: Response){
         try{
+            const erroValidacao = produtoPedidoValidators(req.body);
+            if (erroValidacao){return res.status(400).json({erro: erroValidacao})}
+
             const {id_produto_pedido} = req.params
             const dataUpdate = req.body as Partial<ProdutoPedido>;
             const {data, error} = await supabase.from('produto_pedido').update(dataUpdate).eq('id_produto_pedido', id_produto_pedido).select();
