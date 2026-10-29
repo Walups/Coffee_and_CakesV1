@@ -8,7 +8,7 @@ export interface Categoria{
     nome_categoria: string,
     desconto_categoria: number,
     img_categoria: string,
-    active: boolean
+    active?: boolean //default true in database
 
 }
 

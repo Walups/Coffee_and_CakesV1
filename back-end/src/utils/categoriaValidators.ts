@@ -1,6 +1,6 @@
 const limitDB = {
 
-    nome_categoria: 255,
+    nome_categoria: 32,
     img_banner: 500
 
 }

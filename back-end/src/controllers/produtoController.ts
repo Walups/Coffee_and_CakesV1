@@ -11,6 +11,7 @@ export interface Produto{
     desconto_preco: number;
     descricao?: string;
     imagem_produto: string;
+    active?: boolean //default true in database
 }
 
 export const produtoController = {
