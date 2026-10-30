@@ -1,5 +1,6 @@
 import {Request, Response} from "express";
 import { supabase } from "../config/supabase";
+import { enderecoValidators } from "../utils/enderecoValidators";
 
 export interface Endereco{
 
@@ -10,7 +11,7 @@ export interface Endereco{
     cidade: string;
     uf: string;
     numero: number;
-    complemento: string;
+    complemento?: string;
 
 }
 
@@ -18,6 +19,15 @@ export const enderecoController = {
 
     async create (req: Request, res: Response){
         try{
+
+            const {cep, lograndouro, cidade, uf, numero} = req.body
+            if(!cep || !lograndouro || !cidade || !uf || !numero){
+                return res.status(400).json({erro: "Endereço imcompleto"});
+            };
+
+            const erroValidacao = enderecoValidators(req.body);
+            if(erroValidacao){return res.status(400).json({erro: erroValidacao})};
+
             const novoEndereco = req.body as Endereco;
             const {data, error} = await supabase.from('endereco').insert([novoEndereco]).select();
 
@@ -54,6 +64,9 @@ export const enderecoController = {
 
     async update(req: Request, res: Response){
         try{
+            const erroValidacao = enderecoValidators(req.body);
+            if(erroValidacao){return res.status(400).json({erro: erroValidacao})};
+
             const {id_endereco} = req.params;
             const dataUpdate = req.body as Partial<Endereco>;
             const {data, error} = await supabase.from('endereco').update(dataUpdate).eq('id_endereco', id_endereco).select();

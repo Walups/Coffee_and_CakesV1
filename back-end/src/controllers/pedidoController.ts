@@ -1,5 +1,6 @@
 import {Request, Response} from 'express';
 import {supabase} from '../config/supabase';
+import { pedidoValidators } from '../utils/pedidoValidators';
 
 
 export interface Pedido {
@@ -8,7 +9,9 @@ export interface Pedido {
     id_endereco?: string,
     id_cliente?: string,
     nfe: string,
-    valor_total: number
+    valor_total: number,
+    criado_em?: string,
+    status: string
 
 }
 
@@ -16,6 +19,14 @@ export const pedidoController = {
 
     async create (req: Request, res: Response){
         try{
+            const {status, valor_total, nfe} = req.body
+            if (!status || !valor_total || !nfe){
+                return res.status(400).json({erro: "pedido incompleto"});
+            };
+
+            const erroValidacao = pedidoValidators(req.body);
+            if (erroValidacao){return res.status(400).json({Erro: erroValidacao})};
+
             const novoPedido = req.body as Pedido;
             const {data, error} = await supabase.from('pedido').insert([novoPedido]).select();
 
@@ -52,6 +63,9 @@ export const pedidoController = {
 
     async update(req: Request, res: Response){
         try{
+const erroValidacao = pedidoValidators(req.body);
+            if (erroValidacao){return res.status(400).json({Erro: erroValidacao})};
+
             const {id_pedido} = req.params;
             const dataUpdate = req.body as Partial<Pedido>;
             const {data, error} = await supabase.from('pedido').update(dataUpdate).eq('id_pedido', id_pedido).select();
