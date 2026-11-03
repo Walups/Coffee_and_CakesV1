@@ -13,4 +13,6 @@ export const pedidoValidators = (data: any) =>{
     if(data.status && data.status.length > lemitDB.status){
         return "status invalido"
     }
+
+    return null
 }

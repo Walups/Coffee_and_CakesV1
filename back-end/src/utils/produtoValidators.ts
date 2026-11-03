@@ -29,6 +29,4 @@ export const produtoValidators = (data: any) => {
     }
 
     return null;
-
-
 }

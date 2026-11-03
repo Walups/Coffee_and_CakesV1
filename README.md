@@ -32,4 +32,8 @@ Em construção ...
 
   Aqui fiz toda a configuração do boilerplate, comunicação inicial com o banco de dados e a configuração segura das chaves do banco.
 
+* 02/11/2026 - 21:35: Hoje eu entendi que isso aqui equivale a um TCC e não vai dar para codificar como eu gostaria, vendo como o gemini desenha o código para aprender e então replicando a estrutura na mão para as demais tabelas, como o prazo é curto, afinal tenho até 17/11/26 para entregar e o código vale apenas 20% da composição da nota. Vou adotar quase um "vibecoding", vou pedir para o Gemini gerar os códigos pelo chat mesmo e ir lapidando algumas coisas por pronpts outras por código escrito a mão, não vou conectar um claude code nem nada assim, pois quanto menos mastigado eu tiver a informação e mais trabalho tiver para lapidar mais eu aprendo, mesmo que seja uma migalha.
+
+Hoje eu também entendi que preciso sanitizar todos os dados antes de mandar para o banco e que isso é bem mais profundo do que eu tinha em mente
+
 

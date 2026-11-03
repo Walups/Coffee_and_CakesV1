@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { supabase } from "../config/supabase";
+import { validarUsuarioPayload } from "../utils/usuarioValidators";
 
 export interface Usuario{
 
@@ -18,10 +19,14 @@ export const usuarioController = {
 
     async create(req: Request, res: Response){
         try{
-            const novoUsuario = req.body as Usuario;
-            const {error, data} = await supabase.from('usuario').insert([novoUsuario]).select();
 
-            if(error) res.status(400).json({erro: error.message});
+            const{valido, erros, dadosSanitizados} = validarUsuarioPayload(req.body);
+            if(!valido){
+                return res.status(400).json({erros})
+            }
+            const {error, data} = await supabase.from('usuario').insert([dadosSanitizados]).select();
+
+            if(error) return res.status(400).json({erro: error.message});
             return res.status(200).json(data);
         }catch{
             return res.status(500).json({erro: "Falha interna"});
@@ -45,7 +50,7 @@ export const usuarioController = {
             const {id_usuario} = req.params;
             const {data, error} = await supabase.from('usuario').select('*').eq('id_usuario', id_usuario).single();
 
-            if(error) return res.status(400).json({erro: "Pedido não encontrado"});
+            if(error) return res.status(400).json({erro: "usuário não encontrado"});
             return res.status(200).json(data);
         }catch(erro){
             return res.status(500).json({erro: "Falha interna"});
@@ -55,11 +60,16 @@ export const usuarioController = {
     async update(req: Request, res: Response){
         try{
             const {id_usuario} = req.params;
-            const dataUpdate = req.body as Partial<Usuario>;
-            const {data, error} = await supabase.from('usuario').update(dataUpdate).eq('id_usuario', id_usuario).select();
+            const {valido, erros, dadosSanitizados} = validarUsuarioPayload(req.body, true);
+            
+            if(!valido){
+                return res.status(400).json({erros});
+            }
+
+            const {data, error} = await supabase.from('usuario').update(dadosSanitizados).eq('id_usuario', id_usuario).select();
 
             if (error) return res.status(400).json({erro: error.message});
-            return res.status(200).json({mensagem:"usuario atualizado", pedido: data});
+            return res.status(200).json({mensagem:"usuario atualizado", usuário: data});
         }catch(erro) {
             return res.status(500).json({erro: "Falha interna"});
         }
@@ -68,7 +78,20 @@ export const usuarioController = {
     async softDelete(req: Request, res: Response){
         try{
             const{id_usuario} = req.params;
-            const{error} = await supabase.from('usuario').update({active: "false"}).eq('id_usuario', id_usuario);
+            const{error} = await supabase.from('usuario').update({active: false}).eq('id_usuario', id_usuario);
+
+            if (error) return res.status(400).json({erro: error.message});
+            return res.status(200).json({mensagem: "Usuario deletado!!"});
+        }catch(erro) {
+            return res.status(500).json({erro: "Falha interna"});
+        }
+
+    },
+
+    async delete(req: Request, res: Response){
+        try{
+            const{id_usuario} = req.params;
+            const{error} = await supabase.from('usuario').delete().eq('id_usuario', id_usuario);
 
             if (error) return res.status(400).json({erro: error.message});
             return res.status(200).json({mensagem: "Usuario deletado!!"});
