@@ -2,7 +2,8 @@ const limitDB = {
 
     nome_produto: 32,
     descricao: 255,
-    img: 500
+    img: 500,
+    
 
 }
 
