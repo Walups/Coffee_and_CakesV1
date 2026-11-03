@@ -3,6 +3,7 @@ import express, { Request, Response } from 'express';
 import pedidoRoutes from './routes/pedidoRoutes';
 import produtoRoutes from './routes/produtoRoutes';
 import usuarioRoutes from './routes/usuarioRoutes'
+import enderecoRoutes from './routes/enderecoRoutes'
 
 
 const app = express();
@@ -10,6 +11,7 @@ app.use(express.json());
 app.use('/pedidos', pedidoRoutes);
 app.use('/produtos', produtoRoutes);
 app.use('/usuario', usuarioRoutes);
+app.use('/endereco', enderecoRoutes)
 
 app.get('/', (req: Request, res: Response) => {
     res.json({ 

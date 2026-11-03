@@ -1,13 +1,13 @@
 import {Request, Response} from "express";
 import { supabase } from "../config/supabase";
-import { enderecoValidators } from "../utils/enderecoValidators";
+import { enderecoValidatorsPayload } from "../utils/enderecoValidators";
 
 export interface Endereco{
 
     id_encereco?: string;
     id_cliente?: string;
     cep: string;
-    lograndouro: string;
+    logradouro: string;
     cidade: string;
     uf: string;
     numero: number;
@@ -20,8 +20,8 @@ export const enderecoController = {
     async create (req: Request, res: Response){
         try{
 
-            const {cep, lograndouro, cidade, uf, numero} = req.body
-            if(!cep || !lograndouro || !cidade || !uf || !numero){
+            const {cep, logradouro, cidade, uf, numero} = req.body
+            if(!cep || !logradouro || !cidade || !uf || !numero){
                 return res.status(400).json({erro: "Endereço imcompleto"});
             };
 

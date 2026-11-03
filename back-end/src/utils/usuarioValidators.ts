@@ -69,8 +69,6 @@ export const validarUsuarioPayload = (body: Record<string, any>, isUpdate = fals
 
   const { nome_completo, cpf, email, telefone, role, active } = body;
 
-
-
   if (!isUpdate) {
     if (!nome_completo) erros.push("nome_completo é obrigatório.");
     if (!cpf) erros.push("cpf é obrigatório.");
