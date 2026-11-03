@@ -1,0 +1,42 @@
+Final feliz
+{
+  "id_usuario": "a838d11d-ab60-4998-b795-a74505a92207",
+  "cep": "80000-000",
+  "logradouro": "Rua das Flores",
+  "cidade": "Curitiba",
+  "numero": "102-B",
+  "uf": "pr",
+  "complemento": "Apto 101"
+}
+
+excesso de limites
+{
+  "id_usuario": "a838d11d-ab60-4998-b795-a74505a92207",
+  "cep": "800000000",
+  "logradouro": "Rua das Flores com um nome extremamente longo que excede a capacidade máxima de caracteres definida para a coluna do banco de dados de quinhentos e cinquenta e cinco caracteres para testar a trava de estouro de buffer do validador da aplicacao de e-commerce backend do TCC",
+  "cidade": "Cidade com nome gigante para estourar o limite de duzentos e cinquenta e cinco caracteres no campo de cidade do validador que estamos testando no momento para garantir que nenhuma string maior do que o tamanho suportado pelo postgres passe sem o devido tratamento",
+  "numero": "12345678901",
+  "uf": "PRR",
+  "complemento": "Complemento extremamente longo ultrapassando duzentos e cinquenta e cinco caracteres para validar se o limite superior do banco de dados esta devidamente protegido contra insercoes de texto que causam erro de estouro no banco de dados supabase durante o cadastro"
+}
+
+tipagem incorreta
+{
+  "id_usuario": 12345,
+  "cep": 80000000,
+  "logradouro": 100,
+  "cidade": true,
+  "numero": 450,
+  "uf": 41,
+  "complemento": 101
+}
+
+limites inferiores
+{
+  "id_usuario": "uuid-invalido-123",
+  "cep": "80000",
+  "logradouro": "R",
+  "cidade": "PR",
+  "numero": "1",
+  "uf": "P"
+}

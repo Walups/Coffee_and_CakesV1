@@ -2,10 +2,11 @@ import {Request, Response} from "express";
 import { supabase } from "../config/supabase";
 import { enderecoValidatorsPayload } from "../utils/enderecoValidators";
 
+
 export interface Endereco{
 
     id_encereco?: string;
-    id_cliente?: string;
+    id_usuario?: string;
     cep: string;
     logradouro: string;
     cidade: string;
@@ -20,16 +21,11 @@ export const enderecoController = {
     async create (req: Request, res: Response){
         try{
 
-            const {cep, logradouro, cidade, uf, numero} = req.body
-            if(!cep || !logradouro || !cidade || !uf || !numero){
-                return res.status(400).json({erro: "Endereço imcompleto"});
+            const {valido, erros, dadosLimpos} = enderecoValidatorsPayload(req.body)
+            if(!valido){
+                return res.status(400).json({erros});
             };
-
-            const erroValidacao = enderecoValidators(req.body);
-            if(erroValidacao){return res.status(400).json({erro: erroValidacao})};
-
-            const novoEndereco = req.body as Endereco;
-            const {data, error} = await supabase.from('endereco').insert([novoEndereco]).select();
+            const {data, error} = await supabase.from('endereco').insert([dadosLimpos]).select();
 
             if (error) return res.status(400).json({ erro: error.message});
             return res.status(201).json(data)
@@ -64,12 +60,12 @@ export const enderecoController = {
 
     async update(req: Request, res: Response){
         try{
-            const erroValidacao = enderecoValidators(req.body);
-            if(erroValidacao){return res.status(400).json({erro: erroValidacao})};
-
             const {id_endereco} = req.params;
-            const dataUpdate = req.body as Partial<Endereco>;
-            const {data, error} = await supabase.from('endereco').update(dataUpdate).eq('id_endereco', id_endereco).select();
+            const {valido, erros, dadosLimpos} = enderecoValidatorsPayload(req.body, true);
+            
+            if(!valido) return res.status(400).json({erros});
+
+            const {data, error} = await supabase.from('endereco').update(dadosLimpos).eq('id_endereco', id_endereco).select();
 
             if (error) return res.status(400).json({erro: error.message});
             return res.status(200).json({mensagem:"Endereço atualizado", endereco: data});

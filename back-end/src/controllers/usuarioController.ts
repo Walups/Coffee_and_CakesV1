@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { supabase } from "../config/supabase";
-import { validarUsuarioPayload } from "../utils/usuarioValidators";
+import { usuarioValidatorsPayload } from "../utils/usuarioValidators";
 
 export interface Usuario{
 
@@ -20,7 +20,7 @@ export const usuarioController = {
     async create(req: Request, res: Response){
         try{
 
-            const{valido, erros, dadosSanitizados} = validarUsuarioPayload(req.body);
+            const{valido, erros, dadosSanitizados} = usuarioValidatorsPayload(req.body);
             if(!valido){
                 return res.status(400).json({erros})
             }
@@ -60,11 +60,10 @@ export const usuarioController = {
     async update(req: Request, res: Response){
         try{
             const {id_usuario} = req.params;
-            const {valido, erros, dadosSanitizados} = validarUsuarioPayload(req.body, true);
+            const {valido, erros, dadosSanitizados} = usuarioValidatorsPayload(req.body, true);
             
-            if(!valido){
-                return res.status(400).json({erros});
-            }
+            if(!valido) return res.status(400).json({erros});
+            
 
             const {data, error} = await supabase.from('usuario').update(dadosSanitizados).eq('id_usuario', id_usuario).select();
 

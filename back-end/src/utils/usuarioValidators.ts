@@ -63,11 +63,11 @@ export const stringClear = (value: any): string => {
   return value.trim().replace(/\s+/g, ' ');
 }
 
-export const validarUsuarioPayload = (body: Record<string, any>, isUpdate = false) => {
+export const usuarioValidatorsPayload = (body: Record<string, any>, isUpdate = false) => {
   const erros: string[] = [];
   const dadosSanitizados: Record<string, any> = {};
 
-  const { nome_completo, cpf, email, telefone, role, active } = body;
+  const { nome_completo, cpf, email, telefone, role, active } = body || {};
 
   if (!isUpdate) {
     if (!nome_completo) erros.push("nome_completo é obrigatório.");
@@ -79,7 +79,9 @@ export const validarUsuarioPayload = (body: Record<string, any>, isUpdate = fals
   if (nome_completo !== undefined) {
     const nomeLimpo = stringClear(nome_completo)
 
-    if (typeof nomeLimpo !== 'string' || nomeLimpo.length < 3) {
+    if (typeof nomeLimpo !== 'string'){
+      erros.push("nome_completo deve ser uma string")
+    }else if  (nomeLimpo.length < 3) {
       erros.push("nome_completo deve ter pelo menos 3 caracteres.");
     } else if (nomeLimpo.length > limitDB.nome_completo) {
       erros.push(`nome_completo excede o limite de ${limitDB.nome_completo} caracteres.`);
@@ -152,6 +154,6 @@ export const validarUsuarioPayload = (body: Record<string, any>, isUpdate = fals
   return {
     valido: erros.length === 0,
     erros,
-    dadosSanitizados,
+    dadosSanitizados
   };
 };
