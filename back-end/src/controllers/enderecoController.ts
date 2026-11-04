@@ -2,20 +2,6 @@ import {Request, Response} from "express";
 import { supabase } from "../config/supabase";
 import { enderecoValidatorsPayload } from "../utils/enderecoValidators";
 
-
-export interface Endereco{
-
-    id_encereco?: string;
-    id_usuario?: string;
-    cep: string;
-    logradouro: string;
-    cidade: string;
-    uf: string;
-    numero: number;
-    complemento?: string;
-
-}
-
 export const enderecoController = {
 
     async create (req: Request, res: Response){
@@ -50,13 +36,14 @@ export const enderecoController = {
             const {id_endereco} = req.params;
             const {data, error} = await supabase.from('endereco').select('*').eq('id_endereco', id_endereco).single();
 
-            if(error) return res.status(400).json({erro: "Pedido não encontrado"});
+            if(error) return res.status(404).json({erro: "Endereço não encontrado"});
             return res.status(200).json(data);
         }catch(erro){
             return res.status(500).json({erro: "Falha interna"});
         }
     },
 
+    // V2 lógica para validar que o UUID realmente exista antes de atualizar
     async update(req: Request, res: Response){
         try{
             const {id_endereco} = req.params;
@@ -72,7 +59,7 @@ export const enderecoController = {
             return res.status(500).json({erro: "Falha interna"});
         }
     },
-
+    // V2 lógica para validar que o UUID realmente exista antes de deletar
     async delete(req: Request, res: Response){
         try{
             const{id_endereco} = req.params;

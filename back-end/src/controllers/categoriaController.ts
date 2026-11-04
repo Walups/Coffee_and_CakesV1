@@ -51,7 +51,7 @@ export const categoriaController = {
             const{id_categoria} = req.params;
             const{data, error} = await supabase.from('categoria').select('*').eq('id_categoria', id_categoria).single();
 
-            if(error) return res.status(400).json({erro: "Categoria não encontrada"});
+            if(error) return res.status(404).json({erro: "Categoria não encontrada"});
             return res.status(200).json(data)
         }catch{
             return res.status(500).json({erro: "Falha interna"});

@@ -2,19 +2,6 @@ import { Request, Response } from "express";
 import { supabase } from "../config/supabase";
 import { usuarioValidatorsPayload } from "../utils/usuarioValidators";
 
-export interface Usuario{
-
-    id_usuario?: string;
-    nome_completo: string;
-    cpf: string;
-    telefone: string;
-    email: string;
-    active?: boolean;
-    role?: string;
-    criado_em?: string
-
-}
-
 export const usuarioController = {
 
     async create(req: Request, res: Response){
@@ -28,7 +15,7 @@ export const usuarioController = {
 
             if(error) return res.status(400).json({erro: error.message});
             return res.status(200).json(data);
-        }catch{
+        }catch (erro){
             return res.status(500).json({erro: "Falha interna"});
         }
     },
@@ -50,13 +37,14 @@ export const usuarioController = {
             const {id_usuario} = req.params;
             const {data, error} = await supabase.from('usuario').select('*').eq('id_usuario', id_usuario).single();
 
-            if(error) return res.status(400).json({erro: "usuário não encontrado"});
+            if(error) return res.status(404).json({erro: "usuário não encontrado"});
             return res.status(200).json(data);
         }catch(erro){
             return res.status(500).json({erro: "Falha interna"});
         }
     },
 
+    // V2 lógica para validar que o UUID realmente exista antes de atualizar
     async update(req: Request, res: Response){
         try{
             const {id_usuario} = req.params;
@@ -68,12 +56,13 @@ export const usuarioController = {
             const {data, error} = await supabase.from('usuario').update(dadosSanitizados).eq('id_usuario', id_usuario).select();
 
             if (error) return res.status(400).json({erro: error.message});
-            return res.status(200).json({mensagem:"usuario atualizado", usuário: data});
+            return res.status(200).json({mensagem:"usuario atualizado", usuario: data});
         }catch(erro) {
             return res.status(500).json({erro: "Falha interna"});
         }
     },
 
+    // V2 lógica para validar que o UUID realmente exista antes de atualizar
     async softDelete(req: Request, res: Response){
         try{
             const{id_usuario} = req.params;
@@ -87,6 +76,7 @@ export const usuarioController = {
 
     },
 
+    // V2 lógica para validar que o UUID realmente exista antes de deletar
     async delete(req: Request, res: Response){
         try{
             const{id_usuario} = req.params;
