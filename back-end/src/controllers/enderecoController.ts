@@ -22,9 +22,8 @@ export const enderecoController = {
         try{
 
             const {valido, erros, dadosLimpos} = enderecoValidatorsPayload(req.body)
-            if(!valido){
-                return res.status(400).json({erros});
-            };
+            if(!valido) return res.status(400).json({erros});
+            
             const {data, error} = await supabase.from('endereco').insert([dadosLimpos]).select();
 
             if (error) return res.status(400).json({ erro: error.message});

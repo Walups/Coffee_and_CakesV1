@@ -14,10 +14,11 @@ export const stringClear = (value: any): string => {
   return value.trim().replace(/\s+/g, ' ');
 }
 
+const regexUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export const enderecoValidatorsPayload = (body: Record<string,any>, isUpdate = false) => {
     const erros: string[] = [];
     const dadosLimpos: Record<string, any> = {};
-    const regexUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     const {id_usuario, cep, logradouro, cidade, uf, complemento, numero} = body || {};
 
     if(!isUpdate){
@@ -116,7 +117,7 @@ export const enderecoValidatorsPayload = (body: Record<string,any>, isUpdate = f
     }
 
     if(isUpdate && Object.keys(dadosLimpos).length === 0 && erros.length === 0){
-        erros.push("Nenhum campo vaálido foi fornecido para atualização");
+        erros.push("Nenhum campo válido foi fornecido para atualização");
     }
 
     return{

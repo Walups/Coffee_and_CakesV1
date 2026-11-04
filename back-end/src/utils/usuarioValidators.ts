@@ -122,16 +122,12 @@ export const usuarioValidatorsPayload = (body: Record<string, any>, isUpdate = f
     }
   }
 
-  
-
   if (role !== undefined) {
     const roleLimpa = stringClear(role).toLowerCase()
     const roleDefault = ['cliente', 'administrador', 'funcionario'];
 
     if (typeof roleLimpa !== 'string' || roleLimpa.length === 0) {
       erros.push("role deve ser um texto válido.");
-    } else if (roleLimpa.length > limitDB.role) {
-      erros.push(`role excede o limite de ${limitDB.role} caracteres.`);
     } else if (!roleDefault.includes(roleLimpa)){
       erros.push(`role inválida`)
     }else {

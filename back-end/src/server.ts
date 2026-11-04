@@ -8,9 +8,9 @@ import enderecoRoutes from './routes/enderecoRoutes'
 
 const app = express();
 app.use(express.json());
-app.use('/pedidos', pedidoRoutes);
+app.use('/pedido', pedidoRoutes);
 app.use('/produtos', produtoRoutes);
-app.use('/usuario', usuarioRoutes);
+app.use('/usuarios', usuarioRoutes);
 app.use('/endereco', enderecoRoutes)
 
 app.get('/', (req: Request, res: Response) => {

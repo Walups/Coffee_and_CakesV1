@@ -1,0 +1,31 @@
+Final Feliz
+{
+  "id_usuario": "a838d11d-ab60-4998-b795-a74505a92207",
+  "id_endereco": "b949e22e-bc71-4009-c806-b85616b03308",
+  "status": "em_preparo",
+  "valor_total": 45.9
+}
+
+fora do whitelist
+{
+  "id_usuario": "123-uuid-invalido",
+  "id_endereco": "00000000-0000-0000-0000-xyz",
+  "status": "saiu_para_entrega",
+  "valor_total": -15.50
+}
+
+tipagem incorreta
+{
+  "id_usuario": 12345,
+  "id_endereco": true,
+  "status": 1,
+  "valor_total": "45.90"
+}
+
+valor zero
+{
+  "id_usuario": "a838d11d-ab60-4998-b795-a74505a92207",
+  "id_endereco": "b949e22e-bc71-4009-c806-b85616b03308",
+  "status": "pronto",
+  "valor_total": 0
+}
