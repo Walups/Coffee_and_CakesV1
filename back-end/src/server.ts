@@ -10,8 +10,8 @@ import produtoPedidoRoutes from './routes/produtoPedidoRoutes'
 const app = express();
 app.use(express.json());
 app.use('/pedido', pedidoRoutes);
-app.use('/produtos', produtoRoutes);
-app.use('/usuarios', usuarioRoutes);
+app.use('/produto', produtoRoutes);
+app.use('/usuario', usuarioRoutes);
 app.use('/endereco', enderecoRoutes);
 app.use('/produtoPedido', produtoPedidoRoutes);
 

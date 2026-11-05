@@ -1,0 +1,50 @@
+Final Feliz (POST - Completo e Valido)
+{
+  "nome_produto": "Cappuccino Especial",
+  "preco": 14.50,
+  "desconto_produto": 2.50,
+  "descricao": "Café expresso com leite vaporizado, polvilhado com chocolate e canela",
+  "imagem_produto": "https://site.com/imagens/cappuccino.jpg",
+  "active": true
+}
+
+Final Feliz (POST - Minimo Obrigatorio)
+{
+  "nome_produto": "Expresso Tradicional",
+  "preco": 6.50,
+  "imagem_produto": "https://site.com/imagens/expresso.jpg"
+}
+
+Combo de Erros 1 (Regras de Negocio: Nome curto, preco <= 0, desconto >= preco e imagens/descricoes com mais de 255 chars)
+{
+  "nome_produto": "Ca",
+  "preco": -5.00,
+  "desconto_produto": 10.00,
+  "descricao": "Esta descricao contem um texto propositadamente longo para estourar o limite de 255 caracteres definidos no schema da tabela e na regra de negocio do validador. Repetindo mais palavras apenas para garantir que a contagem ultrapasse duzentos e cinquenta e cinco caracteres com folga total durante o teste.",
+  "imagem_produto": "https://site.com/imagens/link_excessivamente_longo_para_estourar_limite_de_caracteres_do_banco_de_dados_repetindo_mais_texto_para_passar_dos_duzentos_e_cinquenta_e_cinco_caracteres_no_payload_de_teste_do_sistema_de_ecommerce_coffee_and_cakes_255.jpg"
+}
+
+Combo de Erros 2 (Tipagem Incorreta em Todos os Campos)
+{
+  "nome_produto": 12345,
+  "preco": "quinze reais",
+  "desconto_produto": "dois reais",
+  "descricao": true,
+  "imagem_produto": 99999,
+  "active": "ativo"
+}
+
+Erro: Payload Vazio / Campos Obrigatorios Ausentes
+{}
+
+PATCH - Final Feliz (Atualizacao Parcial Valida)
+{
+  "preco": 16.00,
+  "desconto_produto": 3.00,
+  "active": false
+}
+
+PATCH - Erro (Nenhum campo valido para atualizar)
+{
+  "outro_campo": "valor"
+}
