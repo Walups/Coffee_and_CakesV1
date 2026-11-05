@@ -1,0 +1,47 @@
+Final Feliz (POST - Completo e Valido)
+{
+  "nome_categoria": "Cafes Especiais",
+  "desconto_categoria": 0.15,
+  "img_banner": "https://site.com/imagens/banner_cafes_especiais.jpg",
+  "active": true
+}
+
+Final Feliz (POST - Minimo Obrigatorio)
+{
+  "nome_categoria": "Bebidas Quentes"
+}
+
+Combo de Erros 1 (Regras de Negocio e Tamanho: Nome curto, desconto >= 1 e banner > 500 chars)
+{
+  "nome_categoria": "Ca",
+  "desconto_categoria": 1.25,
+  "img_banner": "https://site.com/imagens/banners/banners_promocionais_de_categoria_para_o_ecommerce_coffee_and_cakes_com_um_link_excessivamente_longo_criado_propositadamente_para_ultrapassar_o_limite_de_quinhentos_caracteres_definido_no_schema_da_tabela_e_na_regra_de_negocio_do_validador_de_payload_do_backend.png?token=abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890"
+}
+
+Combo de Erros 2 (Nome Excedendo Limite de 32 Chars + Desconto Negativo)
+{
+  "nome_categoria": "Categoria de Bebidas Quentes e Geladas para Sobremesa",
+  "desconto_categoria": -0.10
+}
+
+Combo de Erros 3 (Tipagem Incorreta em Todos os Campos)
+{
+  "nome_categoria": 99999,
+  "desconto_categoria": "15 por cento",
+  "img_banner": true,
+  "active": "ativo"
+}
+
+Erro: Payload Vazio / Obrigatorio Ausente
+{}
+
+PATCH - Final Feliz (Atualizacao Parcial Valida)
+{
+  "desconto_categoria": 0.20,
+  "active": false
+}
+
+PATCH - Erro (Nenhum campo valido para atualizar)
+{
+  "campo_desconhecido": "teste"
+}
