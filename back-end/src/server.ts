@@ -4,6 +4,7 @@ import pedidoRoutes from './routes/pedidoRoutes';
 import produtoRoutes from './routes/produtoRoutes';
 import usuarioRoutes from './routes/usuarioRoutes'
 import enderecoRoutes from './routes/enderecoRoutes'
+import produtoPedidoRoutes from './routes/produtoPedidoRoutes'
 
 
 const app = express();
@@ -11,7 +12,8 @@ app.use(express.json());
 app.use('/pedido', pedidoRoutes);
 app.use('/produtos', produtoRoutes);
 app.use('/usuarios', usuarioRoutes);
-app.use('/endereco', enderecoRoutes)
+app.use('/endereco', enderecoRoutes);
+app.use('/produtoPedido', produtoPedidoRoutes);
 
 app.get('/', (req: Request, res: Response) => {
     res.json({ 

@@ -59,7 +59,8 @@ export const pedidoController = {
             const {id_pedido} = req.params;
             const {valido, erros, dadosLimpos} = pedidoValidatorsPayload(req.body, true)
             if(!valido) return res.status(400).json({erros});
-                const {data, error} = await supabase.from('pedido').update(dadosLimpos).eq('id_pedido', id_pedido).select();
+            
+            const {data, error} = await supabase.from('pedido').update(dadosLimpos).eq('id_pedido', id_pedido).select();
 
             if (error) return res.status(400).json({erro: error.message});
             return res.status(200).json({mensagem:"Pedido atualizado", pedido: data});

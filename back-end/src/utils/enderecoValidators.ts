@@ -104,7 +104,7 @@ export const enderecoValidatorsPayload = (body: Record<string,any>, isUpdate = f
         }
     }
 
-    if(complemento !== undefined){
+    if(complemento !== undefined && complemento !== null){
         const complementoLimpo = stringClear(complemento)
 
         if(typeof complemento !== 'string'){

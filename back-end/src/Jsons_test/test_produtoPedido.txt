@@ -1,0 +1,48 @@
+Final Feliz (POST - Completo e Valido)
+{
+  "id_pedido": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "id_produto": "b1ffbc99-9c0b-4ef8-bb6d-6bb9bd380a22",
+  "quant": 2,
+  "valor_produto_p": 18.50,
+  "observacao": "Sem calda de chocolate e extra chantilly"
+}
+
+Final Feliz (POST - Sem Opcional)
+{
+  "id_pedido": "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  "id_produto": "b1ffbc99-9c0b-4ef8-bb6d-6bb9bd380a22",
+  "quant": 1,
+  "valor_produto_p": 12.00
+}
+
+Combo de Erros 1 (Regras de Negocio: UUIDs invalidos, quant decimal, valor <= 0 e texto estourado)
+{
+  "id_pedido": "123-uuid-curto",
+  "id_produto": "produto_invalido_sem_hifen",
+  "quant": 2.5,
+  "valor_produto_p": -10.00,
+  "observacao": "Esta observacao contem um texto propositadamente longo para estourar o limite de 255 caracteres definidos no schema da tabela e na regra de negocio do validador. Repetindo mais palavras apenas para garantir que a contagem ultrapasse duzentos e cinquenta e cinco caracteres com folga total durante o teste."
+}
+
+Combo de Erros 2 (Tipagem Incorreta em Todos os Campos)
+{
+  "id_pedido": 12345,
+  "id_produto": true,
+  "quant": "duas",
+  "valor_produto_p": "18.50",
+  "observacao": 99999
+}
+
+Erro: Payload Vazio / Campos Obrigatorios Ausentes
+{}
+
+PATCH - Final Feliz (Atualizacao Parcial Valida)
+{
+  "quant": 4,
+  "observacao": "Alterado para 4 unidades bem quentes"
+}
+
+PATCH - Erro (Nenhum campo valido para atualizar)
+{
+  "campo_que_nao_existe": "teste"
+}

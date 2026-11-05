@@ -56,7 +56,7 @@ export const pedidoValidatorsPayload = (body: Record<string, any>, isUpdate = fa
     if(valor_total !== undefined){
       if(typeof valor_total !== 'number' || Number.isNaN(valor_total)){
         erros.push("valor_total deve ser um número");
-      }else if(valor_total < 0){
+      }else if(valor_total <= 0){
         erros.push("valor_total não pode ser igual ou inferior a 0");
       }else{
         dadosLimpos.valor_total = Number(valor_total.toFixed(2));
