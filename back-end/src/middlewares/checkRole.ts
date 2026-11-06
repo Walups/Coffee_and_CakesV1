@@ -1,18 +1,18 @@
 import { Request, Response, NextFunction } from "express";
-import { supabase } from "../config/supabase";
+import { error } from "node:console";
 
-export const authMiddleware = async (req: Request, res: Response, next: NextFunction)=>{
-    try{
-        const authHeader = req.headers.authorization;
-        if ( !authHeader|| !authHeader.startsWith('Bearer')) return res.status(401).json({erro: "Token de acesso não fornecido ou formato inválido"});
+export const checkRole = (rolesPermitidas: string[]) =>{
+    return (req: Request, res: Response, next: NextFunction) =>{
+        try{
+            const user = (req as any).user
 
-        const token = authHeader.split(' ')[1];
-        const {data, error} = await supabase.auth.getUser(token)
+            if(!user) return res.status(401).json({erro: "usuário não autenticado"});
+            const userRole = user.user_metadata?.role || user.app_metadata?.role
 
-        if(error || !data.user) return res.status(401).json({erro: "Token inválido ou expirado"});
-        (req as any).user = data.user;
-        return next()
-    }catch (erro){
-        return res.status(400).json({erro: "Falha interna na autenticação"})
+            if(!userRole || !rolesPermitidas.includes(userRole)) return res.status(403).json({erro: "acesso negado, permissão insuficiente"})
+            return next()
+        }catch(erro){
+            return res.status(500).json({erro: "Falha interna de autenticação"})
+        }
     }
 }

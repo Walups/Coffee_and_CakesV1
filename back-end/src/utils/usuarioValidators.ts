@@ -124,7 +124,7 @@ export const usuarioValidatorsPayload = (body: Record<string, any>, isUpdate = f
 
   if (role !== undefined) {
     const roleLimpa = stringClear(role).toLowerCase()
-    const roleDefault = ['cliente', 'administrador', 'funcionario'];
+    const roleDefault = ['cliente', 'admin', 'funcionario'];
 
     if (typeof roleLimpa !== 'string' || roleLimpa.length === 0) {
       erros.push("role deve ser um texto válido.");
