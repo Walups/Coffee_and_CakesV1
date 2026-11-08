@@ -10,23 +10,14 @@ const regexUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[
 export const pedidoValidatorsPayload = (body: Record<string, any>, isUpdate = false) => {
     const erros: string[] = [];
     const dadosLimpos: Record<string,any> = {};
-    const{id_usuario, id_endereco, status, valor_total} = body || {};
+    const{id_endereco, status, valor_total, forma_pagamento} = body || {};
     
+    // adicionar forma de pagamento
     if(!isUpdate){
-        if(!id_usuario) erros.push("id_usuario é obrigatório");
         if(!id_endereco) erros.push("id_endereco é obrigatório");
         if(!status) erros.push("status é obrigatório");
         if(!valor_total) erros.push("valor_total é obrigatório");
-    }
-
-    if(id_usuario !== undefined){
-      const id_usuarioLimpo = stringClear(id_usuario);
-      
-      if(!regexUUID.test(id_usuarioLimpo)){
-        erros.push("id_usuário inválido");
-      }else{
-        dadosLimpos.id_usuario = id_usuarioLimpo;
-      }
+        if(!forma_pagamento) erros.push("Forma de pagamento é obrigatória");
     }
 
     if(id_endereco !== undefined){
@@ -42,7 +33,6 @@ export const pedidoValidatorsPayload = (body: Record<string, any>, isUpdate = fa
     if(status !== undefined){
       const statusLimpo= stringClear(status).toLowerCase();
       const statusValidos = ['aguardando', 'em_preparo', 'pronto', 'cancelado'];
-
 
       if(typeof status !== 'string'){
         erros.push("status deve ser um String");
@@ -60,6 +50,21 @@ export const pedidoValidatorsPayload = (body: Record<string, any>, isUpdate = fa
         erros.push("valor_total não pode ser igual ou inferior a 0");
       }else{
         dadosLimpos.valor_total = Number(valor_total.toFixed(2));
+      }
+    }
+
+    if (forma_pagamento !== undefined) {
+      if (typeof forma_pagamento !== 'string') {
+        erros.push("forma_pagamento deve ser uma String");
+      } else {
+        const formaLimpa = stringClear(forma_pagamento).toLowerCase();
+        const formasValidas = ['pix', 'cartao_credito', 'cartao_debito', 'dinheiro'];
+        
+        if (!formasValidas.includes(formaLimpa)) {
+          erros.push("forma_pagamento inválida");
+        } else {
+          dadosLimpos.forma_pagamento = formaLimpa;
+        }
       }
     }
 
