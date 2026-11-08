@@ -56,10 +56,10 @@ export const categoriaXProdutoController = {
     async delete(req: Request, res: Response){
         try{
             const {id_produto, id_categoria} = req.params;
-            const{error} = await supabase.from('categoria_X_produto').delete().match({id_produto , id_categoria});
+            const{error} = await supabase.from('categoria_x_produto').delete().match({id_produto , id_categoria});
 
             if (error) return res.status(400).json({erro: error.message});
-            return res.status(200).json({mensagem: "categoria_X_Produto deletado!!"});
+            return res.status(200).json({mensagem: "categoria_x_Produto deletado!!"});
         }catch(erro) {
             return res.status(500).json({erro: "Falha interna"});
         }

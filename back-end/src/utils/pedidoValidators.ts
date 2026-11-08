@@ -1,7 +1,5 @@
 export const stringClear = (value: any): string => {
-  if(typeof value !== 'string'){
-    return ''
-  }
+  if(typeof value !== 'string') return '';
   return value.trim().replace(/\s+/g, ' ');
 }
 
@@ -10,7 +8,7 @@ const regexUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[
 export const pedidoValidatorsPayload = (body: Record<string, any>, isUpdate = false) => {
     const erros: string[] = [];
     const dadosLimpos: Record<string,any> = {};
-    const{id_endereco, status, valor_total, forma_pagamento} = body || {};
+    const{id_endereco, status, valor_total, forma_pagamento, itens} = body || {};
     
     // adicionar forma de pagamento
     if(!isUpdate){
@@ -18,8 +16,33 @@ export const pedidoValidatorsPayload = (body: Record<string, any>, isUpdate = fa
         if(!status) erros.push("status é obrigatório");
         if(!valor_total) erros.push("valor_total é obrigatório");
         if(!forma_pagamento) erros.push("Forma de pagamento é obrigatória");
-    }
 
+        if (!Array.isArray(itens) || itens.length === 0) {
+            erros.push("O pedido deve conter ao menos um item em 'itens'");
+        } else {
+            const itensLimpos: any[] = [];
+            itens.forEach((item, index) => {
+                if (!item.id_produto || !regexUUID.test(item.id_produto)) {
+                    erros.push(`Item [${index}]: id_produto inválido`);
+                }
+                if (typeof item.quant !== 'number' || item.quant <= 0) {
+                    erros.push(`Item [${index}]: quant deve ser um número maior que zero`);
+                }
+                if (typeof item.valor_produto_pedido !== 'number' || item.valor_produto_pedido <= 0) {
+                    erros.push(`Item [${index}]: valor_produto_pedido inválido`);
+                }
+
+                itensLimpos.push({
+                    id_produto: stringClear(item.id_produto),
+                    quant: Math.floor(item.quant),
+                    valor_produto_pedido: Number(item.valor_produto_pedido.toFixed(2)),
+                    observacao: item.observacao ? stringClear(item.observacao) : null
+                });
+            });
+            dadosLimpos.itens = itensLimpos;
+        }
+    }
+    
     if(id_endereco !== undefined){
       const id_enderecoLimpo = stringClear(id_endereco);
       
