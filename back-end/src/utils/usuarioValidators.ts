@@ -67,13 +67,24 @@ export const usuarioValidatorsPayload = (body: Record<string, any>, isUpdate = f
   const erros: string[] = [];
   const dadosSanitizados: Record<string, any> = {};
 
-  const { nome_completo, cpf, email, telefone, role, active } = body || {};
+  const { nome_completo, cpf, email, telefone, role, active, senha } = body || {};
 
   if (!isUpdate) {
     if (!nome_completo) erros.push("nome_completo é obrigatório.");
     if (!cpf) erros.push("cpf é obrigatório.");
     if (!email) erros.push("email é obrigatório.");
     if (!telefone) erros.push("telefone é obrigatório.");
+    if (!senha) erros.push("senha é obrigatória");
+  }
+
+  if (senha !== undefined) {
+
+    if(typeof senha !== 'string'){
+      erros.push("senha dele ser uma string")
+    }      
+    if (senha.length < 6) {
+        erros.push("senha deve ter no mínimo 6 caracteres");
+    }
   }
 
   if (nome_completo !== undefined) {
