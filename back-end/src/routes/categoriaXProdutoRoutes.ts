@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { categoriaXProdutoController } from "../controllers/CategoriaXProduto";
+import { categoriaXProdutoController } from "../controllers/categoriaXProdutoController";
 import { authMiddleware } from "../middlewares/authMiddleware";
 import { checkRole } from "../middlewares/checkRole";
 
