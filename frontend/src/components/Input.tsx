@@ -1,30 +1,39 @@
 import type { InputHTMLAttributes } from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
-  label: string;
+  label?: string;
   erro?: string;
+  containerClassName?: string;
 }
 
-export function Input({ label, erro, ...props }: InputProps) {
+export function Input({
+  label,
+  erro,
+  className = '',
+  containerClassName = '',
+  ...props
+}: InputProps) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 12 }}>
-      <label style={{ fontSize: 14, fontWeight: 600, color: '#333' }}>
-        {label}
-      </label>
-      
+    <div className={`w-full flex flex-col gap-1 ${containerClassName}`}>
+      {label && (
+        <label className="text-sm font-semibold text-zinc-800 ml-1">
+          {label}
+        </label>
+      )}
+
       <input
+        className={`w-full bg-white text-zinc-800 placeholder-zinc-500 rounded-xl px-4 py-3 text-base shadow-md outline-none transition-all duration-200 focus:ring-2 focus:ring-[#5B2418]/40 border ${
+          erro ? 'border-red-500 ring-1 ring-red-500' : 'border-transparent'
+        } ${className}`}
         {...props}
-        style={{
-          padding: '10px 12px',
-          borderRadius: 6,
-          border: erro ? '1px solid #dc2626' : '1px solid #ccc',
-          fontSize: 14,
-          outline: 'none',
-          ...props.style,
-        }}
       />
 
-      {erro && <span style={{ color: '#dc2626', fontSize: 12 }}>{erro}</span>}
+      {erro && (
+        <span className="text-xs text-red-600 font-medium ml-1 mt-0.5">
+          {erro}
+        </span>
+      )}
     </div>
   );
 }
+export default Input;
