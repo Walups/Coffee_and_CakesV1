@@ -1,20 +1,20 @@
-import { useState } from 'react';
+import { useState, forwardRef } from 'react';
 import type { InputHTMLAttributes } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
-interface InputPasswordProps extends InputHTMLAttributes<HTMLInputElement> {
+export interface InputPasswordProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   erro?: string;
   containerClassName?: string;
 }
 
-export function InputPassword({
+export const InputPassword = forwardRef<HTMLInputElement, InputPasswordProps>(({
   label,
   erro,
   className = '',
   containerClassName = '',
   ...props
-}: InputPasswordProps) {
+}, ref) => {
   const [mostrarSenha, setMostrarSenha] = useState(false);
 
   return (
@@ -26,11 +26,16 @@ export function InputPassword({
       )}
 
       <div className="relative w-full flex items-center">
-        {/* // PARA EDITAR O PADDING OU SHADOW DEPOIS, ALTERE AS CLASSES AQUI */}
+        {/* ==========================================================================
+            CUSTOMIZAÇÃO MANUAL (Padding e Sombra do Input de Senha):
+            - Padding: 'px-8' (~2em laterais), 'pr-12' (reserva espaço para ícone do olho) e 'py-4' (~1em vertical)
+            - Sombra: 'shadow-[0_13px_7px_rgba(0,0,0,0.15)]' (y = 13px, blur = 7px)
+           ========================================================================== */}
         <input
+          ref={ref}
           {...props}
           type={mostrarSenha ? 'text' : 'password'}
-          className={`w-full bg-white text-zinc-800 placeholder-zinc-500 rounded-xl px-8 pr-12 py-4 text-base shadow-[0_13px_7px_rgba(0,0,0,0.1)] outline-none transition-all duration-200 focus:ring-2 focus:ring-[#5B2418]/40 border ${
+          className={`w-full bg-white text-zinc-800 placeholder-zinc-500 rounded-xl px-8 pr-12 py-4 text-base shadow-[0_13px_7px_rgba(0,0,0,0.15)] outline-none transition-all duration-200 focus:ring-2 focus:ring-[#5B2418]/40 border ${
             erro ? 'border-red-500 ring-1 ring-red-500' : 'border-transparent'
           } ${className}`}
         />
@@ -57,6 +62,7 @@ export function InputPassword({
       )}
     </div>
   );
-}
+});
 
+InputPassword.displayName = 'InputPassword';
 export default InputPassword;

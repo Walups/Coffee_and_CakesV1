@@ -1,0 +1,32 @@
+# Regras e Diretrizes do Projeto (Coffee & Cakes)
+
+Este arquivo define as diretrizes obrigatórias para o desenvolvimento de novas telas e manutenção de componentes no projeto.
+
+---
+
+## Diretrizes para Criação e Evolução de Telas
+
+### 1. Formulários e Estilização
+- **`react-hook-form`**: Todos os formulários devem ser gerenciados com `react-hook-form` (utilizando validações apropriadas, tratamento de erros e integração com os inputs).
+- **Tailwind CSS**: A estilização deve seguir exclusivamente o Tailwind CSS, preservando o padrão visual do projeto (paleta de cores do café/bolos como `#5B2418`, espaçamentos padronizados, bordas arredondadas e responsividade).
+
+### 2. Tratamento de Estados de Loading e Prevenção de Vazamento de Memória (Memory Leak)
+- **Estados de Loading**: Sempre controlar estados de carregamento (`loading`/`isSubmitting`) em chamadas assíncronas para fornecer feedback visual ao usuário e prevenir múltiplos envios.
+- **Prevenção de Vazamentos de Memória**:
+  - Evitar atualizações de estado (`setState`) em componentes desmontados.
+  - Utilizar cancelamento de requisições assíncronas (via `AbortController` em `fetch`/`axios` dentro do cleanup de hooks como `useEffect`) quando houver navegação ou desmontagem precoce de telas.
+  - Desabilitar botões de ação e campos enquanto houver requisições ativas.
+
+### 3. Reutilização de Componentes Base
+- É **obrigatório** reutilizar e estender os componentes base localizados em `frontend/src/components/`, evitando a reescrita de elementos HTML puros (`<button>`, `<input>`) que já possuem versão estilizada e com comportamento padrão:
+  - **`Button.tsx`**: Botão padronizado com suporte nativo às propriedades `loading`, `disabled` e estilização do tema.
+  - **`Input.tsx`**: Campo de entrada de texto padronizado com suporte a labels e mensagens de erro.
+  - **`InputPassword.tsx`**: Campo de senha padronizado com botão de alternância de visibilidade (exibir/ocultar senha).
+- Novos componentes compartilhados devem ser criados nessa pasta seguindo o mesmo padrão de tipagem e acessibilidade.
+
+### 4. Consulta ao Mapeamento de Rotas da API
+- Sempre consultar o arquivo **`API_MAP.md`** na raiz ou documentação do projeto antes de implementar integrações ou chamadas HTTP, garantindo conformidade com:
+  - Endpoints e métodos HTTP definidos.
+  - Estrutura esperada nos corpos de requisição (payloads) e respostas (responses).
+  - Padrões de autenticação (headers, tokens).
+
