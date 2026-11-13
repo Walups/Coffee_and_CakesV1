@@ -21,8 +21,9 @@ export function Input({
         </label>
       )}
 
+      {/* // PARA EDITAR O PADDING OU SHADOW DEPOIS, ALTERE AS CLASSES AQUI */}
       <input
-        className={`w-full bg-white text-zinc-800 placeholder-zinc-500 rounded-xl px-4 py-3 text-base shadow-md outline-none transition-all duration-200 focus:ring-2 focus:ring-[#5B2418]/40 border ${
+        className={`w-full bg-white text-zinc-800 placeholder-zinc-500 rounded-xl px-8 py-4 text-base shadow-[0_13px_7px_rgba(0,0,0,0.1)] outline-none transition-all duration-200 focus:ring-2 focus:ring-[#5B2418]/40 border ${
           erro ? 'border-red-500 ring-1 ring-red-500' : 'border-transparent'
         } ${className}`}
         {...props}

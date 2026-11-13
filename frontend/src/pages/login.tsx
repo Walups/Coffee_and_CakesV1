@@ -31,19 +31,20 @@ export const Login: FC<LoginProps> = ({
 
   return (
     <div className="min-h-screen w-full bg-[#F1BEC5] flex flex-col items-center justify-center p-4">
-      {/* Container principal centralizado */}
-      <div className="w-full max-w-[360px] flex flex-col items-center">
+      {/* // PARA ALTERAR A LARGURA DO BLOCO NO MOBILE, EDITE AQUI */}
+      <div className="w-[90%] sm:w-full max-w-[360px] flex flex-col items-center">
         {/* Logo */}
         <div className="mb-8 flex justify-center">
           <img
             src={logoImg}
             alt="Coffee & Cakes"
-            className="w-64 sm:w-72 object-contain drop-shadow-xs pointer-events-none"
+            className="w-64 sm:w-72 object-contain drop-shadow-xs pointer-events-none scale-90"
           />
         </div>
 
         {/* Formulário de Login */}
         <form onSubmit={handleSubmit} className="w-full flex flex-col items-center gap-4">
+          {/* // PARA EDITAR O PADDING OU SHADOW DEPOIS, ALTERE AS CLASSES AQUI */}
           <Input
             type="email"
             placeholder="E-mail"
@@ -51,21 +52,24 @@ export const Login: FC<LoginProps> = ({
             onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="email"
+            className="px-6 py-4 shadow-[0_13px_7px_rgba(0,0,0,0.1)]"
           />
 
+          {/* // PARA EDITAR O PADDING OU SHADOW DEPOIS, ALTERE AS CLASSES AQUI */}
           <InputPassword
             placeholder="Senha"
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
             required
             autoComplete="current-password"
+            className="px-6 py-4 shadow-[0_13px_7px_rgba(0,0,0,0.1)]"
           />
 
-          {/* Botão Login */}
+          {/* // PARA EDITAR O PADDING OU SHADOW DEPOIS, ALTERE AS CLASSES AQUI */}
           <Button
             type="submit"
             loading={loading}
-            className="w-48 sm:w-52 mt-2 py-2.5"
+            className="w-48 sm:w-52 mt-2 px-8 py-4 shadow-[0_13px_7px_rgba(0,0,0,0.1)]"
           >
             Login
           </Button>
