@@ -7,13 +7,13 @@ export const usuarioController = {
     //criação de conta
     async register(req: Request, res: Response) {
         try {
-            const { email, senha, ...restoBody } = req.body;
-            const { valido, erros, dadosSanitizados } = usuarioValidatorsPayload({ email, senha, ...restoBody });
+            const { email, password, ...restoBody } = req.body;
+            const { valido, erros, dadosSanitizados } = usuarioValidatorsPayload({ email, password, ...restoBody });
             if (!valido) return res.status(400).json({ erros });
 
             const { data: authData, error: authError } = await supabase.auth.signUp({
-                email: dadosSanitizados.email,
-                password: senha,
+                email: dadosSanitizados.email as string,
+                password: password as string,
             });
 
             if (authError) return res.status(400).json({ erro: authError.message });
@@ -22,7 +22,7 @@ export const usuarioController = {
             const payloadPerfil = {
                 ...dadosSanitizados,
                 id_usuario: authData.user.id,
-                role: 'cliente', 
+                role: 'cliente',
                 active: true
             };
 
@@ -44,18 +44,18 @@ export const usuarioController = {
 
     async login(req: Request, res: Response) {
         try {
-            const { email, senha } = req.body;
+            const { email, password } = req.body;
 
-            if (!email || !senha) {
-                return res.status(400).json({ erros: ["E-mail e senha são obrigatórios"] });
+            if (!email || !password) {
+                return res.status(400).json({ erros: ["E-mail e password são obrigatórios"] });
             }
 
             const { data: authSession, error: authError } = await supabase.auth.signInWithPassword({
                 email: email.trim().toLowerCase(),
-                password: senha,
+                password: password,
             });
 
-            if (authError) return res.status(401).json({ erro: "E-mail ou senha incorretos" });
+            if (authError) return res.status(401).json({ erro: "E-mail ou password incorretos" });
 
             const { data: perfil } = await supabase
                 .from('usuario')
@@ -79,7 +79,9 @@ export const usuarioController = {
 
     async getMe(req: Request, res: Response) {
         try {
-            const userID = (req as any).user.id;
+            const userID = req.user?.id;
+            if (!userID) return res.status(401).json({ erro: "Usuário não autenticado" });
+
             const { data, error } = await supabase.from('usuario').select('*').eq('id_usuario', userID).single();
 
             if (error) return res.status(404).json({ erro: "Usuário não encontrado" });
@@ -114,11 +116,14 @@ export const usuarioController = {
 
     async update(req: Request, res: Response) {
         try {
-            const userRole = (req as any).user.role;
-            const userId = (req as any).user.id;
+            const userRole = req.user?.role;
+            const userId = req.user?.id;
 
-            const targetId = userRole === 'admin' && req.params.id_usuario ? req.params.id_usuario : userId;
-            
+            if (!userId) return res.status(401).json({ erro: "Usuário não autenticado" });
+
+            const paramId = Array.isArray(req.params.id_usuario) ? req.params.id_usuario[0] : req.params.id_usuario;
+            const targetId = userRole === 'admin' && paramId ? paramId : userId;
+
             const { valido, erros, dadosSanitizados } = usuarioValidatorsPayload(req.body, true);
             if (!valido) return res.status(400).json({ erros });
 
@@ -143,10 +148,13 @@ export const usuarioController = {
 
     async softDelete(req: Request, res: Response) {
         try {
-            const userRole = (req as any).user.role;
-            const userId = (req as any).user.id;
+            const userRole = req.user?.role;
+            const userId = req.user?.id;
 
-            const targetId = userRole === 'admin' && req.params.id_usuario ? req.params.id_usuario : userId;
+            if (!userId) return res.status(401).json({ erro: "Usuário não autenticado" });
+
+            const paramId = Array.isArray(req.params.id_usuario) ? req.params.id_usuario[0] : req.params.id_usuario;
+            const targetId = userRole === 'admin' && paramId ? paramId : userId;
 
             const { data, error } = await supabase.from('usuario').update({ active: false }).eq('id_usuario', targetId).select();
 
@@ -163,10 +171,13 @@ export const usuarioController = {
 
     async delete(req: Request, res: Response) {
         try {
-            const userRole = (req as any).user.role;
-            const userId = (req as any).user.id;
+            const userRole = req.user?.role;
+            const userId = req.user?.id;
 
-            const targetId = (userRole === 'admin' && req.params.id_usuario ? req.params.id_usuario : userId) as string;
+            if (!userId) return res.status(401).json({ erro: "Usuário não autenticado" });
+
+            const paramId = Array.isArray(req.params.id_usuario) ? req.params.id_usuario[0] : req.params.id_usuario;
+            const targetId = userRole === 'admin' && paramId ? paramId : userId;
 
             const { data, error } = await supabase
                 .from('usuario')
@@ -181,8 +192,8 @@ export const usuarioController = {
 
             const { error: authError } = await supabase.auth.admin.deleteUser(targetId);
             if (authError) {
-                return res.status(400).json({ 
-                    erro: "Perfil removido, mas ocorreu uma falha ao excluir as credenciais: " + authError.message 
+                return res.status(400).json({
+                    erro: "Perfil removido, mas ocorreu uma falha ao excluir as credenciais: " + authError.message
                 });
             }
 

@@ -1,28 +1,36 @@
-export const stringClear = (value: any): string => {
-  if(typeof value !== 'string') return '';
+export const stringClear = (value: unknown): string => {
+  if (typeof value !== 'string') return '';
   return value.trim().replace(/\s+/g, ' ');
-}
+};
 
 const regexUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export const pedidoValidatorsPayload = (body: Record<string, any>, isUpdate = false) => {
+export interface ItemPedidoLimpo {
+  id_produto: string;
+  quant: number;
+  valor_produto_pedido: number;
+  observacao: string | null;
+}
+
+export const pedidoValidatorsPayload = (body: Record<string, unknown>, isUpdate = false) => {
     const erros: string[] = [];
-    const dadosLimpos: Record<string,any> = {};
-    const{id_endereco, status, valor_total, forma_pagamento, itens} = body || {};
+    const dadosLimpos: Record<string, unknown> = {};
+    const { id_endereco, status, valor_total, forma_pagamento, itens } = body || {};
     
     // adicionar forma de pagamento
-    if(!isUpdate){
-        if(!id_endereco) erros.push("id_endereco é obrigatório");
-        if(!status) erros.push("status é obrigatório");
-        if(!valor_total) erros.push("valor_total é obrigatório");
-        if(!forma_pagamento) erros.push("Forma de pagamento é obrigatória");
+    if (!isUpdate) {
+        if (!id_endereco) erros.push("id_endereco é obrigatório");
+        if (!status) erros.push("status é obrigatório");
+        if (!valor_total) erros.push("valor_total é obrigatório");
+        if (!forma_pagamento) erros.push("Forma de pagamento é obrigatória");
 
         if (!Array.isArray(itens) || itens.length === 0) {
             erros.push("O pedido deve conter ao menos um item em 'itens'");
         } else {
-            const itensLimpos: any[] = [];
-            itens.forEach((item, index) => {
-                if (!item.id_produto || !regexUUID.test(item.id_produto)) {
+            const itensLimpos: ItemPedidoLimpo[] = [];
+            itens.forEach((itemRaw: unknown, index) => {
+                const item = (typeof itemRaw === 'object' && itemRaw !== null ? itemRaw : {}) as Record<string, unknown>;
+                if (!item.id_produto || typeof item.id_produto !== 'string' || !regexUUID.test(item.id_produto)) {
                     erros.push(`Item [${index}]: id_produto inválido`);
                 }
                 if (typeof item.quant !== 'number' || item.quant <= 0) {
@@ -34,8 +42,8 @@ export const pedidoValidatorsPayload = (body: Record<string, any>, isUpdate = fa
 
                 itensLimpos.push({
                     id_produto: stringClear(item.id_produto),
-                    quant: Math.floor(item.quant),
-                    valor_produto_pedido: Number(item.valor_produto_pedido.toFixed(2)),
+                    quant: typeof item.quant === 'number' ? Math.floor(item.quant) : 0,
+                    valor_produto_pedido: typeof item.valor_produto_pedido === 'number' ? Number(item.valor_produto_pedido.toFixed(2)) : 0,
                     observacao: item.observacao ? stringClear(item.observacao) : null
                 });
             });

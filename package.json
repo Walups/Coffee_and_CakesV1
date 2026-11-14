@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "axios": "^1.21.1",
+    "react-router-dom": "^7.18.5"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.7"
+  },
+  "scripts": {
+  "dev": "concurrently \"npm run dev --prefix ../CoffeeAndCakes/backend\" \"npm run dev --prefix ../CoffeeAndCakes/frontend\"",
+  "install:all": "concurrently \"npm install --prefix ../CoffeeAndCakes/backend\" \"npm install --prefix ../CoffeeAndCakes/frontend\""
+  }
+}

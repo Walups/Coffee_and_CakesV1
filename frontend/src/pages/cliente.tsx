@@ -1,23 +1,24 @@
 import type { FC } from 'react';
+import { usuarioService } from '../services/usuarioService';
 
 interface ClienteProps {
   onLogout?: () => void;
 }
 
 export const ClientePage: FC<ClienteProps> = ({ onLogout }) => {
+  const handleLogout = onLogout || (() => usuarioService.logout());
+
   return (
     <div className="min-h-screen w-full bg-[#F1BEC5] flex flex-col">
       <header className="w-full bg-[#5B2418] text-white px-6 py-4 flex items-center justify-between shadow-md">
         <h1 className="text-xl font-bold tracking-tight">Área do Cliente (/cliente)</h1>
-        {onLogout && (
-          <button
-            type="button"
-            onClick={onLogout}
-            className="text-sm font-medium bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-          >
-            Sair
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="text-sm font-medium bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+        >
+          Sair
+        </button>
       </header>
 
       <main className="flex-1 flex items-center justify-center p-6">

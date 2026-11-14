@@ -56,34 +56,32 @@ export const tratartelefone = (telRaw: string): { valido: boolean; telFormatado:
   return { valido: true, telFormatado: telLimpo };
 };
 
-export const stringClear = (value: any): string => {
-  if(typeof value !== 'string'){
-    return ''
+export const stringClear = (value: unknown): string => {
+  if (typeof value !== 'string') {
+    return '';
   }
   return value.trim().replace(/\s+/g, ' ');
-}
+};
 
-export const usuarioValidatorsPayload = (body: Record<string, any>, isUpdate = false) => {
+export const usuarioValidatorsPayload = (body: Record<string, unknown>, isUpdate = false) => {
   const erros: string[] = [];
-  const dadosSanitizados: Record<string, any> = {};
+  const dadosSanitizados: Record<string, unknown> = {};
 
-  const { nome_completo, cpf, email, telefone, role, active, senha } = body || {};
+  const { nome_completo, cpf, email, telefone, role, active, password } = body || {};
 
   if (!isUpdate) {
     if (!nome_completo) erros.push("nome_completo é obrigatório.");
     if (!cpf) erros.push("cpf é obrigatório.");
     if (!email) erros.push("email é obrigatório.");
     if (!telefone) erros.push("telefone é obrigatório.");
-    if (!senha) erros.push("senha é obrigatória");
+    if (!password) erros.push("password é obrigatório.");
   }
 
-  if (senha !== undefined) {
-
-    if(typeof senha !== 'string'){
-      erros.push("senha dele ser uma string")
-    }      
-    if (senha.length < 6) {
-        erros.push("senha deve ter no mínimo 6 caracteres");
+  if (password !== undefined) {
+    if (typeof password !== 'string') {
+      erros.push("password deve ser uma string");
+    } else if (password.length < 6) {
+      erros.push("password deve ter no mínimo 6 caracteres");
     }
   }
 
@@ -141,8 +139,8 @@ export const usuarioValidatorsPayload = (body: Record<string, any>, isUpdate = f
       erros.push("role deve ser um texto válido.");
     } else if (!roleDefault.includes(roleLimpa)){
       erros.push(`role inválida`)
-    }else {
-      dadosSanitizados.role = role.trim();
+    } else {
+      dadosSanitizados.role = roleLimpa;
     }
   }
 

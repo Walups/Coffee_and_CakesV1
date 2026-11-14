@@ -4,16 +4,16 @@ const limitDB = {
     imagem_produto: 255
 };
 
-export const stringClear = (value: any): string => {
+export const stringClear = (value: unknown): string => {
   if (typeof value !== 'string') {
     return '';
   }
   return value.trim().replace(/\s+/g, ' ');
 };
 
-export const produtoValidatorsPayload = (body: Record<string, any>, isUpdate = false) => {
+export const produtoValidatorsPayload = (body: Record<string, unknown>, isUpdate = false) => {
     const erros: string[] = [];
-    const dadosLimpos: Record<string, any> = {};
+    const dadosLimpos: Record<string, unknown> = {};
     const { nome_produto, preco, desconto_produto, descricao, imagem_produto, active } = body || {};
 
     if (!isUpdate) {

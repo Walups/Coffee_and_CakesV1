@@ -1,4 +1,4 @@
-export const stringClear = (value: any): string => {
+export const stringClear = (value: unknown): string => {
   if (typeof value !== 'string') {
     return '';
   }
@@ -7,9 +7,9 @@ export const stringClear = (value: any): string => {
 
 const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export const categoriaXProdutoValidatorsPayload = (body: Record<string, any>) => {
+export const categoriaXProdutoValidatorsPayload = (body: Record<string, unknown>) => {
     const erros: string[] = [];
-    const dadosLimpos: Record<string, any> = {};
+    const dadosLimpos: Record<string, unknown> = {};
     const { id_categoria, id_produto } = body || {};
 
     

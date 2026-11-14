@@ -6,7 +6,8 @@ export const enderecoController = {
 
     async create (req: Request, res: Response){
         try{
-            const userId = (req as any).user.id
+            const userId = req.user?.id;
+            if (!userId) return res.status(401).json({ erro: "Usuário não autenticado" });
             const {valido, erros, dadosLimpos} = enderecoValidatorsPayload(req.body)
             if(!valido) return res.status(400).json({erros});
             const payloadFinal = {
@@ -25,8 +26,8 @@ export const enderecoController = {
 
     async listMine (req: Request, res: Response){
         try{
-        
-            const userId = (req as any).user.id
+            const userId = req.user?.id;
+            if (!userId) return res.status(401).json({ erro: "Usuário não autenticado" });
             const {data, error} = await supabase.from('endereco').select('*').eq('id_usuario', userId);
 
             if(error) return res.status(400).json({erro: "Sem endereços cadastarados"});
@@ -40,7 +41,8 @@ export const enderecoController = {
     async update(req: Request, res: Response){
         try{
             const {id_endereco} = req.params;
-            const userID = (req as any).user.id;
+            const userID = req.user?.id;
+            if (!userID) return res.status(401).json({ erro: "Usuário não autenticado" });
             const {valido, erros, dadosLimpos} = enderecoValidatorsPayload(req.body, true);
             
             if(!valido) return res.status(400).json({erros});
@@ -58,7 +60,8 @@ export const enderecoController = {
     async delete(req: Request, res: Response){
         try{
             const{id_endereco} = req.params;
-            const userId = (req as any).user.id
+            const userId = req.user?.id;
+            if (!userId) return res.status(401).json({ erro: "Usuário não autenticado" });
             const{error} = await supabase.from('endereco').delete().eq('id_endereco', id_endereco).eq("id_usuario", userId)
 
             if (error) return res.status(404).json({erro: error.message});

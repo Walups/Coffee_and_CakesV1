@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import type { FC } from 'react';
 import { useForm } from 'react-hook-form';
-import axios from 'axios';
 import logoImg from '../assets/Logo.png';
 import { Input } from '../components/Input';
 import { InputPassword } from '../components/InputPassword';
 import { Button } from '../components/Button';
-import { api } from '../services/api';
+import { isApiError, getApiErrorMessage } from '../services/api';
+import { usuarioService } from '../services/usuarioService';
 
 interface LoginProps {
   onNavigateRegister?: () => void;
@@ -16,7 +16,7 @@ interface LoginProps {
 
 interface LoginFormData {
   email: string;
-  senha: string;
+  password: string;
 }
 
 export const Login: FC<LoginProps> = ({
@@ -35,7 +35,7 @@ export const Login: FC<LoginProps> = ({
   } = useForm<LoginFormData>({
     defaultValues: {
       email: '',
-      senha: '',
+      password: '',
     },
     mode: 'onBlur',
   });
@@ -55,26 +55,25 @@ export const Login: FC<LoginProps> = ({
     abortControllerRef.current = new AbortController();
 
     try {
-      // 1. Enviar no body JSON exatamente { email, senha } para /usuario/login
-      const response = await api.post(
-        '/usuario/login',
+      // 1. Enviar no body JSON exatamente { email, password } para /usuario/login
+      const data = await usuarioService.login(
         {
           email: formData.email,
-          senha: formData.senha,
+          password: formData.password,
         },
-        {
-          signal: abortControllerRef.current.signal,
-        }
+        abortControllerRef.current.signal
       );
 
-      const data = response.data;
-
       // 2. Em caso de sucesso (200), salvar data.token e JSON.stringify(data.usuario) no localStorage
-      if (data?.token) {
-        localStorage.setItem('token', data.token);
-      }
-      if (data?.usuario) {
-        localStorage.setItem('usuario', JSON.stringify(data.usuario));
+      if (data?.token && data?.usuario) {
+        usuarioService.setSession(data.token, data.usuario);
+      } else {
+        if (data?.token) {
+          localStorage.setItem('token', data.token);
+        }
+        if (data?.usuario) {
+          localStorage.setItem('usuario', JSON.stringify(data.usuario));
+        }
       }
 
       // 3. Redirecionar com base em data.usuario.role: se for 'admin' -> /admin; se for 'cliente' (ou outro) -> /cliente
@@ -85,25 +84,16 @@ export const Login: FC<LoginProps> = ({
         onNavigate(targetPath);
       } else {
         window.history.pushState({}, '', targetPath);
-        window.location.pathname = targetPath;
+        window.location.assign(targetPath);
       }
     } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
+      if (isApiError(error)) {
         if (error.name === 'CanceledError' || error.name === 'AbortError') {
           return;
         }
 
-        // 4. Caso a API retorne erro, exibir apenas a mensagem retornada no JSON (data.erro || data.erros?.[0]), sem código HTTP
-        const data = error.response?.data;
-        const msg = data?.erro || data?.erros?.[0];
-
-        if (msg) {
-          setErrorMessage(msg);
-        } else if (error.message === 'Network Error') {
-          setErrorMessage('Não foi possível conectar ao servidor. Verifique se a API está rodando.');
-        } else {
-          setErrorMessage('Erro ao realizar login. Tente novamente.');
-        }
+        // Caso a API retorne erro, exibir apenas a mensagem retornada no JSON (data.erro || data.erros?.[0]), sem código HTTP
+        setErrorMessage(getApiErrorMessage(error, 'Erro ao realizar login. Tente novamente.'));
       } else if (error instanceof Error) {
         if (error.name !== 'AbortError') {
           setErrorMessage(error.message);
@@ -140,7 +130,9 @@ export const Login: FC<LoginProps> = ({
 
         {/* Formulário de Login */}
         <form
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={(e) => {
+            void handleSubmit(onSubmit)(e);
+          }}
           noValidate
           className="w-full flex flex-col items-center gap-4"
         >
@@ -170,8 +162,8 @@ export const Login: FC<LoginProps> = ({
             placeholder="Senha"
             autoComplete="current-password"
             disabled={loading}
-            erro={errors.senha?.message}
-            {...register('senha', {
+            erro={errors.password?.message}
+            {...register('password', {
               required: 'Senha é obrigatória',
             })}
           />

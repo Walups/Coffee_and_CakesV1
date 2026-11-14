@@ -3,16 +3,16 @@ const limitDB = {
     img_banner: 500
 };
 
-export const stringClear = (value: any): string => {
+export const stringClear = (value: unknown): string => {
   if (typeof value !== 'string') {
     return '';
   }
   return value.trim().replace(/\s+/g, ' ');
 };
 
-export const categoriaValidatorsPayload = (body: Record<string, any>, isUpdate = false) => {
+export const categoriaValidatorsPayload = (body: Record<string, unknown>, isUpdate = false) => {
     const erros: string[] = [];
-    const dadosLimpos: Record<string, any> = {};
+    const dadosLimpos: Record<string, unknown> = {};
     const { nome_categoria, desconto_categoria, img_banner, active } = body || {};
 
     if (!isUpdate) {

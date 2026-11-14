@@ -6,7 +6,8 @@ export const pedidoController = {
 
     async create(req: Request, res: Response) {
         try {
-            const userId = (req as any).user.id;
+            const userId = req.user?.id;
+            if (!userId) return res.status(401).json({ erro: "Usuário não autenticado" });
             const { valido, erros, dadosLimpos } = pedidoValidatorsPayload(req.body);
             
             if (!valido) return res.status(400).json({ erros });
@@ -27,7 +28,7 @@ export const pedidoController = {
 
             if (errorPedido) return res.status(400).json({ erro: errorPedido.message });
 
-            const payloadItens = itens.map((item: any) => ({
+            const payloadItens = (itens as Array<{ id_produto: string; quant: number; valor_produto_pedido: number; observacao?: string }>).map((item) => ({
                 id_pedido: pedidoCriado.id_pedido,
                 id_produto: item.id_produto,
                 quant: item.quant,
@@ -100,7 +101,8 @@ export const pedidoController = {
 
     async listMe(req: Request, res: Response) {
         try {
-            const userId = (req as any).user.id;
+            const userId = req.user?.id;
+            if (!userId) return res.status(401).json({ erro: "Usuário não autenticado" });
             const { data, error } = await supabase.from('pedido').select(`
                 *,
                 usuario ( nome_completo, email, telefone ),
@@ -163,7 +165,8 @@ export const pedidoController = {
     async softDelete(req: Request, res: Response) {
         try {
             const { id_pedido } = req.params;
-            const userId = (req as any).user.id;
+            const userId = req.user?.id;
+            if (!userId) return res.status(401).json({ erro: "Usuário não autenticado" });
 
             const { data, error } = await supabase.from('pedido').update({ status: "cancelado" }).eq('id_pedido', id_pedido).eq('id_usuario', userId).select();
 

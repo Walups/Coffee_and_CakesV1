@@ -7,18 +7,18 @@ const lemitDB = {
     numero: 10
 }
 
-export const stringClear = (value: any): string => {
-  if(typeof value !== 'string'){
-    return ''
+export const stringClear = (value: unknown): string => {
+  if (typeof value !== 'string') {
+    return '';
   }
   return value.trim().replace(/\s+/g, ' ');
-}
+};
 
 const regexUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export const enderecoValidatorsPayload = (body: Record<string,any>, isUpdate = false) => {
+export const enderecoValidatorsPayload = (body: Record<string, unknown>, isUpdate = false) => {
     const erros: string[] = [];
-    const dadosLimpos: Record<string, any> = {};
+    const dadosLimpos: Record<string, unknown> = {};
     const {id_usuario, cep, logradouro, cidade, uf, complemento, numero} = body || {};
 
     if(!isUpdate){

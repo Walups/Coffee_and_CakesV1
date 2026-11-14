@@ -4,6 +4,36 @@ Este arquivo define as diretrizes obrigatórias para o desenvolvimento de novas 
 
 ---
 
+## Padrão Arquitetural e Consistência de Código (Golden Files)
+
+### 1. Arquivos de Referência Obrigatórios
+- **Front-end:** Antes de criar qualquer nova página ou formulário, leia o arquivo de login (`frontend/src/pages/login.tsx` ou equivalente) e espelhe rigorosamente sua estrutura de pastas, gerenciamento de estados (`loading`, `error`), validação de formulários, classes de estilização e feedback visual ao usuário.
+- **Back-end:** Todo novo recurso deve seguir exatamente a mesma separação de responsabilidades, tratamento de status HTTP (`200`, `201`, `400`, `401`, `500`) e padrão de respostas JSON (`{ erro: "..." }`) implementados em `backend/src/controllers/usuarioController.ts`.
+
+### 2. Isolamento da Camada de API
+- Nunca faça chamadas `fetch` ou `axios` diretamente dentro de componentes visuais (`.tsx`). Centralize todas as requisições em `frontend/src/services/` utilizando uma única instância configurada com a URL base e o token de sessão.
+
+### 3. Qualidade e Tipagem
+- É proibido o uso de `any` explícito no TypeScript; crie interfaces/types claros para os payloads e respostas. Remova imports e variáveis não utilizados antes de finalizar qualquer arquivo.
+
+---
+
+## Diretrizes Obrigatórias de Contratos e Integração
+
+### 1. Padrão de Nomenclatura de Contratos
+- Todos os campos de domínio entre Front-end, Back-end e Banco seguem `snake_case` em português (`nome_completo`, `cpf`, `telefone`, `id_usuario`, etc.).
+- Apenas campos de autenticação seguem o padrão do Supabase Auth (`email` e `password`).
+
+### 2. Leitura Obrigatória Antes de Conectar
+- Antes de criar ou editar qualquer chamada HTTP no Front-end, leia obrigatoriamente o controller e o arquivo de rotas correspondente no Back-end para copiar os nomes exatos do `req.body` e do retorno JSON. Nunca assuma nomes de campos.
+
+### 3. Definição de Pronto com Testes Automatizados
+Nenhuma rota ou integração Front-end/Back-end é considerada concluída sem testes automatizados escritos e aprovados no terminal:
+- **Back-end:** Teste de integração (`Vitest` + `Supertest`) validando status HTTP, contrato do JSON de resposta e limpeza obrigatória dos dados criados no Supabase no bloco `afterAll` (removendo tanto da tabela pública quanto de `auth.users` via `service_role`).
+- **Front-end:** Teste unitário na camada de serviços (`Vitest`) validando se os payloads enviados contêm exatamente os nomes de campos esperados pelo Back-end e se erros são tratados corretamente.
+
+---
+
 ## Diretrizes para Criação e Evolução de Telas
 
 ### 1. Formulários e Estilização
@@ -29,4 +59,3 @@ Este arquivo define as diretrizes obrigatórias para o desenvolvimento de novas 
   - Endpoints e métodos HTTP definidos.
   - Estrutura esperada nos corpos de requisição (payloads) e respostas (responses).
   - Padrões de autenticação (headers, tokens).
-

@@ -4,6 +4,9 @@ import { Register } from './pages/register';
 import { EmConstrucao } from './pages/em_construcao';
 import { AdminPage } from './pages/admin';
 import { ClientePage } from './pages/cliente';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { AdminRoute } from './components/AdminRoute';
+import { usuarioService, getStoredUsuario } from './services/usuarioService';
 
 export function App() {
   const getInitialPage = () => {
@@ -12,6 +15,12 @@ export function App() {
     if (path === '/cliente') return 'cliente';
     if (path === '/register') return 'register';
     if (path === '/forgot-password') return 'forgot-password';
+    if (path === '/') {
+      const usuario = getStoredUsuario();
+      if (usuario?.role === 'cliente') return 'cliente';
+      if (usuario?.role === 'admin') return 'admin';
+      return 'login';
+    }
     return 'login';
   };
 
@@ -31,21 +40,32 @@ export function App() {
     else if (path === '/cliente') setCurrentPage('cliente');
     else if (path === '/register') setCurrentPage('register');
     else if (path === '/forgot-password') setCurrentPage('forgot-password');
-    else setCurrentPage('login');
+    else if (path === '/') {
+      const usuario = getStoredUsuario();
+      if (usuario?.role === 'cliente') setCurrentPage('cliente');
+      else if (usuario?.role === 'admin') setCurrentPage('admin');
+      else setCurrentPage('login');
+    } else setCurrentPage('login');
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('usuario');
-    navigateTo('/login');
+    usuarioService.logout(navigateTo);
   };
 
   if (currentPage === 'admin') {
-    return <AdminPage onLogout={handleLogout} />;
+    return (
+      <AdminRoute onNavigate={navigateTo}>
+        <AdminPage onLogout={handleLogout} />
+      </AdminRoute>
+    );
   }
 
   if (currentPage === 'cliente') {
-    return <ClientePage onLogout={handleLogout} />;
+    return (
+      <ProtectedRoute onNavigate={navigateTo}>
+        <ClientePage onLogout={handleLogout} />
+      </ProtectedRoute>
+    );
   }
 
   if (currentPage === 'register') {
