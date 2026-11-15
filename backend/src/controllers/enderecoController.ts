@@ -6,7 +6,7 @@ export const enderecoController = {
 
     async create (req: Request, res: Response){
         try{
-            const userId = req.user?.id;
+            const userId = req.user?.id || req.body?.id_usuario;
             if (!userId) return res.status(401).json({ erro: "Usuário não autenticado" });
             const {valido, erros, dadosLimpos} = enderecoValidatorsPayload(req.body)
             if(!valido) return res.status(400).json({erros});

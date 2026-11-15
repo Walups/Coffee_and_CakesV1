@@ -1,2 +1,3 @@
-export { Register, default } from './register';
+import Register from './register';
 
+export default Register;

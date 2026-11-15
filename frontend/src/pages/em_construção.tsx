@@ -1,2 +1,3 @@
-export { EmConstrucao, default } from './em_construcao';
+import EmConstrucao from './em_construcao';
 
+export default EmConstrucao;

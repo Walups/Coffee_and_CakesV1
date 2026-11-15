@@ -13,6 +13,14 @@ Este arquivo define as diretrizes obrigatórias para o desenvolvimento de novas 
 ### 2. Isolamento da Camada de API
 - Nunca faça chamadas `fetch` ou `axios` diretamente dentro de componentes visuais (`.tsx`). Centralize todas as requisições em `frontend/src/services/` utilizando uma única instância configurada com a URL base e o token de sessão.
 
+#### Instância centralizada de HTTP (Axios)
+- **Caminho:** `frontend/src/services/api.ts`
+- **Export:** `export const api = axios.create({ ... })` (named export `api`)
+- **Chave do token JWT no `localStorage`:** `'token'` (string literal — gravada em `localStorage.setItem('token', ...)` e lida em `localStorage.getItem('token')`)
+- **Interceptor de autenticação:** a instância `api` possui um `interceptors.request` que injeta automaticamente o header `Authorization: Bearer <token>` em **todas** as requisições quando o token estiver presente na chave `'token'` do `localStorage`.
+
+> **⚠️ PROIBIDO:** Nenhum arquivo em `frontend/src/services/` pode importar `axios` diretamente (`import axios from 'axios'`). Todo novo service **obrigatoriamente** deve importar e usar a instância centralizada: `import { api } from './api'`. Isso garante que o header de autenticação seja enviado em todas as requisições protegidas sem necessidade de configuração adicional por service.
+
 ### 3. Qualidade e Tipagem
 - É proibido o uso de `any` explícito no TypeScript; crie interfaces/types claros para os payloads e respostas. Remova imports e variáveis não utilizados antes de finalizar qualquer arquivo.
 

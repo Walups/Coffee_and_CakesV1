@@ -1,4 +1,7 @@
-import { api } from './api';
+import { api, getApiErrorMessage } from './api';
+import { enderecoService } from './enderecoService';
+import type { EnderecoPayload, EnderecoResponse } from './enderecoService';
+import { cleanDigits } from '../utils/validators';
 
 export interface LoginPayload {
   email: string;
@@ -33,6 +36,26 @@ export interface LoginResponse {
 export interface RegisterResponse {
   mensagem: string;
   usuario: UsuarioResponse;
+}
+
+export interface CadastroCompletoInput {
+  nome: string;
+  cpf: string;
+  email: string;
+  telefone: string;
+  senha: string;
+  rua: string;
+  numero: string;
+  cep: string;
+  complemento?: string;
+  cidade?: string;
+  uf?: string;
+}
+
+export interface CadastroCompletoResponse {
+  mensagem: string;
+  usuario: UsuarioResponse;
+  endereco: EnderecoResponse[] | EnderecoResponse;
 }
 
 export function getStoredToken(): string | null {
@@ -94,6 +117,7 @@ export const usuarioService = {
   isAuthenticated,
   isAdmin,
   logout,
+
   async login(payload: LoginPayload, signal?: AbortSignal): Promise<LoginResponse> {
     const response = await api.post<LoginResponse>('/usuario/login', payload, { signal });
     return response.data;
@@ -102,5 +126,71 @@ export const usuarioService = {
   async register(payload: RegisterPayload, signal?: AbortSignal): Promise<RegisterResponse> {
     const response = await api.post<RegisterResponse>('/usuario/register', payload, { signal });
     return response.data;
+  },
+
+  /**
+   * Orquestra o cadastro completo:
+   * 1º Cria o usuário via POST /usuario/register (limpando máscaras de CPF e telefone)
+   * 2º Cria o endereço vinculado ao usuário via POST /endereco (limpando máscara de CEP)
+   */
+  async registerWithAddress(
+    data: CadastroCompletoInput,
+    signal?: AbortSignal
+  ): Promise<CadastroCompletoResponse> {
+    const cpfLimpo = cleanDigits(data.cpf);
+    const telefoneLimpo = cleanDigits(data.telefone);
+    const cepLimpo = cleanDigits(data.cep);
+
+    // 1ª etapa: Criação do usuário
+    const usuarioPayload: RegisterPayload = {
+      nome_completo: data.nome.trim(),
+      cpf: cpfLimpo,
+      email: data.email.trim().toLowerCase(),
+      telefone: telefoneLimpo,
+      password: data.senha,
+    };
+
+    const userRes = await usuarioService.register(usuarioPayload, signal);
+    const usuarioCriado = userRes.usuario;
+
+    if (!usuarioCriado?.id_usuario) {
+      throw new Error('Falha ao registrar usuário: ID do usuário não retornado.');
+    }
+
+    // 2ª etapa: Criação do endereço vinculado
+    const enderecoPayload: EnderecoPayload = {
+      id_usuario: usuarioCriado.id_usuario,
+      cep: cepLimpo,
+      logradouro: data.rua.trim(),
+      numero: data.numero.trim(),
+      cidade: (data.cidade || 'Curitiba').trim(),
+      uf: (data.uf || 'PR').trim().toUpperCase(),
+    };
+
+    if (data.complemento && data.complemento.trim()) {
+      enderecoPayload.complemento = data.complemento.trim();
+    }
+
+    try {
+      const enderecoRes = await enderecoService.create(enderecoPayload, signal);
+      return {
+        mensagem: 'Cadastro realizado com sucesso!',
+        usuario: usuarioCriado,
+        endereco: enderecoRes,
+      };
+    } catch (err: unknown) {
+      const detalheErro = getApiErrorMessage(err, 'Erro ao cadastrar endereço do usuário.');
+      const erroComposto = new Error(`Falha no cadastro de endereço: ${detalheErro}`);
+      Object.assign(erroComposto, {
+        etapa: 'endereco',
+        usuarioCriado,
+        cause: err,
+      });
+      throw erroComposto;
+    }
+  },
+
+  cadastrarComEndereco(data: CadastroCompletoInput, signal?: AbortSignal): Promise<CadastroCompletoResponse> {
+    return this.registerWithAddress(data, signal);
   },
 };

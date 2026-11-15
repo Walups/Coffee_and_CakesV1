@@ -3,7 +3,9 @@ import { Login } from './pages/login';
 import { Register } from './pages/register';
 import { EmConstrucao } from './pages/em_construcao';
 import { AdminPage } from './pages/admin';
+import { CategoriasPage } from './pages/CategoriasPage';
 import { ClientePage } from './pages/cliente';
+import { AdminLayout } from './components/AdminLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
 import { usuarioService, getStoredUsuario } from './services/usuarioService';
@@ -11,6 +13,8 @@ import { usuarioService, getStoredUsuario } from './services/usuarioService';
 export function App() {
   const getInitialPage = () => {
     const path = window.location.pathname;
+    if (path === '/admin/categorias') return 'admin-categorias';
+    if (path === '/admin/produtos') return 'admin-produtos';
     if (path === '/admin') return 'admin';
     if (path === '/cliente') return 'cliente';
     if (path === '/register') return 'register';
@@ -36,7 +40,9 @@ export function App() {
 
   const navigateTo = (path: string) => {
     window.history.pushState({}, '', path);
-    if (path === '/admin') setCurrentPage('admin');
+    if (path === '/admin/categorias') setCurrentPage('admin-categorias');
+    else if (path === '/admin/produtos') setCurrentPage('admin-produtos');
+    else if (path === '/admin') setCurrentPage('admin');
     else if (path === '/cliente') setCurrentPage('cliente');
     else if (path === '/register') setCurrentPage('register');
     else if (path === '/forgot-password') setCurrentPage('forgot-password');
@@ -55,7 +61,27 @@ export function App() {
   if (currentPage === 'admin') {
     return (
       <AdminRoute onNavigate={navigateTo}>
-        <AdminPage onLogout={handleLogout} />
+        <AdminPage onLogout={handleLogout} onNavigate={navigateTo} />
+      </AdminRoute>
+    );
+  }
+
+  if (currentPage === 'admin-categorias') {
+    return (
+      <AdminRoute onNavigate={navigateTo}>
+        <CategoriasPage onLogout={handleLogout} onNavigate={navigateTo} />
+      </AdminRoute>
+    );
+  }
+
+  if (currentPage === 'admin-produtos') {
+    return (
+      <AdminRoute onNavigate={navigateTo}>
+        <AdminLayout activeItem="produtos" onLogout={handleLogout} onNavigate={navigateTo}>
+          <div className="py-20 text-center text-zinc-500 font-medium">
+            Gestão de Produtos em desenvolvimento.
+          </div>
+        </AdminLayout>
       </AdminRoute>
     );
   }

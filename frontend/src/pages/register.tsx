@@ -1,17 +1,29 @@
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { FC } from 'react';
 import { useForm } from 'react-hook-form';
 import { Input } from '../components/Input';
 import { InputPassword } from '../components/InputPassword';
 import { Button } from '../components/Button';
+import { isApiError, getApiErrorMessage } from '../services/api';
+import { usuarioService } from '../services/usuarioService';
+import {
+  cleanDigits,
+  maskCPF,
+  maskPhone,
+  maskCEP,
+  validarCPF,
+} from '../utils/validators';
 
 interface RegisterProps {
   onBackToLogin?: () => void;
+  onNavigate?: (path: string) => void;
 }
 
 interface RegisterFormData {
   nome: string;
   email: string;
+  cpf: string;
+  telefone: string;
   rua: string;
   numero: string;
   cep: string;
@@ -21,18 +33,24 @@ interface RegisterFormData {
   termos: boolean;
 }
 
-export const Register: FC<RegisterProps> = ({ onBackToLogin }) => {
+export const Register: FC<RegisterProps> = ({ onBackToLogin, onNavigate }) => {
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const {
     register,
     handleSubmit,
     watch,
-    formState: { errors, isSubmitting },
+    setError,
+    formState: { errors },
   } = useForm<RegisterFormData>({
     defaultValues: {
       nome: '',
       email: '',
+      cpf: '',
+      telefone: '',
       rua: '',
       numero: '',
       cep: '',
@@ -56,30 +74,101 @@ export const Register: FC<RegisterProps> = ({ onBackToLogin }) => {
   }, []);
 
   async function onSubmit(data: RegisterFormData) {
+    // 1. Verificação leve dos dígitos do CPF no front-end antes do envio
+    if (!validarCPF(data.cpf)) {
+      setError('cpf', { type: 'manual', message: 'CPF inválido' });
+      setErrorMessage('O CPF informado é inválido. Por favor, verifique os dígitos.');
+      return;
+    }
+
+    // 2. Validação de confirmação de senha
+    if (data.senha !== data.confirmarSenha) {
+      setError('confirmarSenha', { type: 'manual', message: 'As senhas não coincidem' });
+      setErrorMessage('As senhas digitadas não coincidem.');
+      return;
+    }
+
+    // 3. Validação do aceite dos termos
+    if (!data.termos) {
+      setError('termos', { type: 'manual', message: 'Você deve concordar com os termos e políticas' });
+      setErrorMessage('Você deve concordar com os termos e políticas para continuar.');
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
     abortControllerRef.current = new AbortController();
 
     try {
-      console.log('Dados do formulário de cadastro:', data);
+      // Orquestra as requisições em sequência na camada de serviço (1º cria o usuário -> 2º cria o endereço vinculado a ele)
+      await usuarioService.registerWithAddress(
+        {
+          nome: data.nome,
+          email: data.email,
+          cpf: data.cpf,
+          telefone: data.telefone,
+          senha: data.senha,
+          rua: data.rua,
+          numero: data.numero,
+          cep: data.cep,
+          complemento: data.complemento,
+        },
+        abortControllerRef.current.signal
+      );
 
-      // Simulação de requisição assíncrona com suporte a AbortController
-      await new Promise<void>((resolve, reject) => {
-        const timeout = setTimeout(() => resolve(), 1200);
-        abortControllerRef.current?.signal.addEventListener('abort', () => {
-          clearTimeout(timeout);
-          reject(new DOMException('Aborted', 'AbortError'));
-        });
-      });
+      setSuccessMessage('Cadastro realizado com sucesso! Redirecionando...');
 
-      alert('Cadastro realizado com sucesso!');
-      if (onBackToLogin) onBackToLogin();
+      setTimeout(() => {
+        if (onNavigate) {
+          onNavigate('/login');
+        } else if (onBackToLogin) {
+          onBackToLogin();
+        } else if (typeof window !== 'undefined') {
+          window.history.pushState({}, '', '/login');
+          window.location.assign('/login');
+        }
+      }, 1000);
     } catch (err: unknown) {
-      if (err instanceof DOMException && err.name === 'AbortError') {
-        console.log('Requisição cancelada devido à desmontagem do componente.');
-        return;
+      if (isApiError(err)) {
+        if (err.name === 'CanceledError' || err.name === 'AbortError') {
+          return;
+        }
+        setErrorMessage(getApiErrorMessage(err, 'Erro ao realizar cadastro. Tente novamente.'));
+      } else if (err instanceof Error) {
+        if (err.name === 'AbortError') {
+          return;
+        }
+        setErrorMessage(err.message);
+      } else {
+        setErrorMessage('Erro inesperado ao realizar cadastro.');
       }
-      console.error('Erro no cadastro:', err);
+    } finally {
+      setLoading(false);
     }
   }
+
+  // Registros com máscaras controladas
+  const cpfField = register('cpf', {
+    required: 'CPF é obrigatório',
+    validate: (val) => validarCPF(val) || 'CPF inválido',
+  });
+
+  const telefoneField = register('telefone', {
+    required: 'Telefone é obrigatório',
+    validate: (val) => {
+      const limpo = cleanDigits(val);
+      return (limpo.length >= 10 && limpo.length <= 11) || 'Telefone inválido (informe DDD + número)';
+    },
+  });
+
+  const cepField = register('cep', {
+    required: 'CEP é obrigatório',
+    validate: (val) => {
+      const limpo = cleanDigits(val);
+      return limpo.length === 8 || 'CEP deve conter 8 dígitos';
+    },
+  });
 
   return (
     <div className="min-h-screen w-full bg-[#F1BEC5] flex flex-col items-center justify-center p-4 py-8">
@@ -93,9 +182,24 @@ export const Register: FC<RegisterProps> = ({ onBackToLogin }) => {
           Cadastro
         </h1>
 
+        {/* Feedback visual de Erro ou Sucesso */}
+        {errorMessage && (
+          <div className="w-full mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl text-sm font-medium text-center shadow-xs">
+            {errorMessage}
+          </div>
+        )}
+
+        {successMessage && (
+          <div className="w-full mb-4 bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded-xl text-sm font-medium text-center shadow-xs">
+            {successMessage}
+          </div>
+        )}
+
         {/* Formulário de Cadastro */}
         <form
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={(e) => {
+            void handleSubmit(onSubmit)(e);
+          }}
           noValidate
           className="w-full flex flex-col gap-3.5"
         >
@@ -103,10 +207,14 @@ export const Register: FC<RegisterProps> = ({ onBackToLogin }) => {
           <div className="flex flex-col gap-3">
             <Input
               placeholder="Nome completo"
-              disabled={isSubmitting}
+              disabled={loading}
               erro={errors.nome?.message}
               {...register('nome', {
                 required: 'Nome completo é obrigatório',
+                minLength: {
+                  value: 3,
+                  message: 'Nome completo deve ter pelo menos 3 caracteres',
+                },
               })}
             />
 
@@ -114,7 +222,7 @@ export const Register: FC<RegisterProps> = ({ onBackToLogin }) => {
               type="email"
               placeholder="E-mail"
               autoComplete="email"
-              disabled={isSubmitting}
+              disabled={loading}
               erro={errors.email?.message}
               {...register('email', {
                 required: 'E-mail é obrigatório',
@@ -124,13 +232,37 @@ export const Register: FC<RegisterProps> = ({ onBackToLogin }) => {
                 },
               })}
             />
+
+            {/* Inputs de CPF e Telefone logo abaixo de E-mail */}
+            <Input
+              placeholder="CPF"
+              disabled={loading}
+              erro={errors.cpf?.message}
+              {...cpfField}
+              onChange={(e) => {
+                e.target.value = maskCPF(e.target.value);
+                cpfField.onChange(e);
+              }}
+            />
+
+            <Input
+              type="tel"
+              placeholder="Telefone"
+              disabled={loading}
+              erro={errors.telefone?.message}
+              {...telefoneField}
+              onChange={(e) => {
+                e.target.value = maskPhone(e.target.value);
+                telefoneField.onChange(e);
+              }}
+            />
           </div>
 
           {/* Grupo 2: Endereço */}
           <div className="flex flex-col gap-3 pt-1">
             <Input
               placeholder="Rua"
-              disabled={isSubmitting}
+              disabled={loading}
               erro={errors.rua?.message}
               {...register('rua', {
                 required: 'Rua é obrigatória',
@@ -141,7 +273,7 @@ export const Register: FC<RegisterProps> = ({ onBackToLogin }) => {
             <div className="grid grid-cols-[1fr_1.3fr] gap-3">
               <Input
                 placeholder="Número"
-                disabled={isSubmitting}
+                disabled={loading}
                 erro={errors.numero?.message}
                 {...register('numero', {
                   required: 'Número é obrigatório',
@@ -150,17 +282,19 @@ export const Register: FC<RegisterProps> = ({ onBackToLogin }) => {
 
               <Input
                 placeholder="CEP"
-                disabled={isSubmitting}
+                disabled={loading}
                 erro={errors.cep?.message}
-                {...register('cep', {
-                  required: 'CEP é obrigatório',
-                })}
+                {...cepField}
+                onChange={(e) => {
+                  e.target.value = maskCEP(e.target.value);
+                  cepField.onChange(e);
+                }}
               />
             </div>
 
             <Input
               placeholder="Complemento"
-              disabled={isSubmitting}
+              disabled={loading}
               erro={errors.complemento?.message}
               {...register('complemento')}
             />
@@ -171,7 +305,7 @@ export const Register: FC<RegisterProps> = ({ onBackToLogin }) => {
             <InputPassword
               placeholder="Senha"
               autoComplete="new-password"
-              disabled={isSubmitting}
+              disabled={loading}
               erro={errors.senha?.message}
               {...register('senha', {
                 required: 'Senha é obrigatória',
@@ -185,7 +319,7 @@ export const Register: FC<RegisterProps> = ({ onBackToLogin }) => {
             <InputPassword
               placeholder="Confirmar senha"
               autoComplete="new-password"
-              disabled={isSubmitting}
+              disabled={loading}
               erro={errors.confirmarSenha?.message}
               {...register('confirmarSenha', {
                 required: 'Confirmação de senha é obrigatória',
@@ -200,7 +334,7 @@ export const Register: FC<RegisterProps> = ({ onBackToLogin }) => {
             <label className="flex items-center gap-2.5 cursor-pointer select-none">
               <input
                 type="checkbox"
-                disabled={isSubmitting}
+                disabled={loading}
                 className="w-5 h-5 rounded-xs bg-white text-[#5B2418] border-none shadow-[0_2px_4px_rgba(0,0,0,0.1)] accent-[#5B2418] cursor-pointer"
                 {...register('termos', {
                   required: 'Você deve concordar com os termos e políticas',
@@ -221,7 +355,8 @@ export const Register: FC<RegisterProps> = ({ onBackToLogin }) => {
           <div className="flex justify-center w-full mt-4">
             <Button
               type="submit"
-              loading={isSubmitting}
+              loading={loading}
+              disabled={loading}
               className="w-56 py-3.5 text-xl font-bold shadow-[0_13px_7px_rgba(0,0,0,0.18)]"
             >
               Cadastrar-se
@@ -229,12 +364,16 @@ export const Register: FC<RegisterProps> = ({ onBackToLogin }) => {
           </div>
 
           {/* Link para voltar ao Login */}
-          {onBackToLogin && (
+          {(onBackToLogin || onNavigate) && (
             <div className="flex flex-col items-center mt-3 text-center">
               <button
                 type="button"
-                onClick={onBackToLogin}
-                className="text-sm font-medium text-zinc-900 underline hover:text-[#5B2418] transition-colors cursor-pointer"
+                disabled={loading}
+                onClick={() => {
+                  if (onBackToLogin) onBackToLogin();
+                  else if (onNavigate) onNavigate('/login');
+                }}
+                className="text-sm font-medium text-zinc-900 underline hover:text-[#5B2418] transition-colors cursor-pointer disabled:opacity-60"
               >
                 Já possui conta? Faça login
               </button>

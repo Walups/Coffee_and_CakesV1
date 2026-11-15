@@ -15,10 +15,27 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
             return res.status(401).json({ erro: "Token inválido ou expirado" });
         }
 
+        // Busca o perfil na tabela 'usuario' (onde a role e o status active são persistidos)
+        const { data: perfil } = await supabase
+            .from('usuario')
+            .select('role, active')
+            .eq('id_usuario', data.user.id)
+            .single();
+
+        if (perfil && perfil.active === false) {
+            return res.status(403).json({ erro: "Conta de usuário desativada. Entre em contato com o suporte." });
+        }
+
+        const role =
+            perfil?.role ||
+            (data.user.user_metadata?.role as string) ||
+            (data.user.app_metadata?.role as string) ||
+            'cliente';
+
         req.user = {
             id: data.user.id,
             email: data.user.email,
-            role: (data.user.user_metadata?.role as string) || (data.user.app_metadata?.role as string) || 'cliente',
+            role,
         };
         return next();
     } catch (erro) {
