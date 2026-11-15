@@ -5,6 +5,8 @@ const supabaseKey = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABA
 
 export const supabase = createClient(supabaseUrl, supabaseKey, {
     auth: {
-        persistSession: false
+        persistSession: false,
+    autoRefreshToken: false,
+    detectSessionInUrl: false,
     }
 });

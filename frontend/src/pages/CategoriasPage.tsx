@@ -51,6 +51,7 @@ export const CategoriasPage: FC<CategoriasPageProps> = ({ onLogout, onNavigate }
 
   // Prevenção de vazamento de memória (Memory Leak) ao desmontar a tela
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void carregarCategorias();
     return () => {
       if (abortControllerRef.current) {

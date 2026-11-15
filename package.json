@@ -7,7 +7,8 @@
     "concurrently": "^10.0.7"
   },
   "scripts": {
-  "dev": "concurrently \"npm run dev --prefix ../CoffeeAndCakes/backend\" \"npm run dev --prefix ../CoffeeAndCakes/frontend\"",
-  "install:all": "concurrently \"npm install --prefix ../CoffeeAndCakes/backend\" \"npm install --prefix ../CoffeeAndCakes/frontend\""
+    "test": "npm test --prefix frontend",
+    "dev": "concurrently \"npm run dev --prefix ../CoffeeAndCakes/backend\" \"npm run dev --prefix ../CoffeeAndCakes/frontend\"",
+    "install:all": "concurrently \"npm install --prefix ../CoffeeAndCakes/backend\" \"npm install --prefix ../CoffeeAndCakes/frontend\""
   }
 }

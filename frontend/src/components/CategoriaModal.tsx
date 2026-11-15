@@ -48,7 +48,6 @@ export const CategoriaModal: FC<CategoriaModalProps> = ({
   // Atualiza valores do formulário quando categoriaParaEditar muda ou modal abre
   useEffect(() => {
     if (isOpen) {
-      setErrorMessage(null);
       if (categoriaParaEditar) {
         let descontoStr = '';
         if (

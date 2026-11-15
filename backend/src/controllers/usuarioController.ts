@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { supabase } from "../config/supabase";
 import { usuarioValidatorsPayload } from "../utils/usuarioValidators";
+import { createClient } from "@supabase/supabase-js";
 
 export const usuarioController = {
 
@@ -49,6 +50,17 @@ export const usuarioController = {
             if (!email || !password) {
                 return res.status(400).json({ erros: ["E-mail e password são obrigatórios"] });
             }
+
+            const supabaseAuth = createClient(
+                process.env.SUPABASE_URL!,
+                process.env.SUPABASE_ANON_KEY!,
+                {
+                    auth: {
+                    persistSession: false,
+                    autoRefreshToken: false,
+                    },
+                }
+            );
 
             const { data: authSession, error: authError } = await supabase.auth.signInWithPassword({
                 email: email.trim().toLowerCase(),

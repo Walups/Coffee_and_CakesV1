@@ -4,8 +4,8 @@ import { Register } from './pages/register';
 import { EmConstrucao } from './pages/em_construcao';
 import { AdminPage } from './pages/admin';
 import { CategoriasPage } from './pages/CategoriasPage';
+import { ProdutosPage } from './pages/ProdutosPage';
 import { ClientePage } from './pages/cliente';
-import { AdminLayout } from './components/AdminLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
 import { usuarioService, getStoredUsuario } from './services/usuarioService';
@@ -77,11 +77,7 @@ export function App() {
   if (currentPage === 'admin-produtos') {
     return (
       <AdminRoute onNavigate={navigateTo}>
-        <AdminLayout activeItem="produtos" onLogout={handleLogout} onNavigate={navigateTo}>
-          <div className="py-20 text-center text-zinc-500 font-medium">
-            Gestão de Produtos em desenvolvimento.
-          </div>
-        </AdminLayout>
+        <ProdutosPage onLogout={handleLogout} onNavigate={navigateTo} />
       </AdminRoute>
     );
   }
