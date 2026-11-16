@@ -65,7 +65,7 @@ export const pedidoController = {
                     quant,
                     valor_produto_pedido,
                     observacao,
-                    produto ( nome_produto, img )
+                    produto ( nome_produto )
                 )
             `);
 

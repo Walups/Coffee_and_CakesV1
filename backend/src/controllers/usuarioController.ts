@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { supabase } from "../config/supabase";
 import { usuarioValidatorsPayload } from "../utils/usuarioValidators";
-import { createClient } from "@supabase/supabase-js";
 
 export const usuarioController = {
 
@@ -51,17 +50,6 @@ export const usuarioController = {
                 return res.status(400).json({ erros: ["E-mail e password são obrigatórios"] });
             }
 
-            const supabaseAuth = createClient(
-                process.env.SUPABASE_URL!,
-                process.env.SUPABASE_ANON_KEY!,
-                {
-                    auth: {
-                    persistSession: false,
-                    autoRefreshToken: false,
-                    },
-                }
-            );
-
             const { data: authSession, error: authError } = await supabase.auth.signInWithPassword({
                 email: email.trim().toLowerCase(),
                 password: password,
@@ -85,6 +73,7 @@ export const usuarioController = {
                 usuario: perfil || authSession.user
             });
         } catch (erro) {
+            console.error('Erro no login:', erro);
             return res.status(500).json({ erro: "Falha interna" });
         }
     },
