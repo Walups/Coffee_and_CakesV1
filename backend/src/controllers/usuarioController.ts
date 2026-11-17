@@ -1,6 +1,20 @@
 import { Request, Response } from "express";
+import { createClient } from '@supabase/supabase-js';
 import { supabase } from "../config/supabase";
 import { usuarioValidatorsPayload } from "../utils/usuarioValidators";
+
+const getAuthClient = () => {
+    return createClient(
+        process.env.SUPABASE_URL as string,
+        (process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_KEY) as string,
+        {
+            auth: {
+                persistSession: false,
+                autoRefreshToken: false,
+            },
+        }
+    );
+};
 
 export const usuarioController = {
 
@@ -11,7 +25,8 @@ export const usuarioController = {
             const { valido, erros, dadosSanitizados } = usuarioValidatorsPayload({ email, password, ...restoBody });
             if (!valido) return res.status(400).json({ erros });
 
-            const { data: authData, error: authError } = await supabase.auth.signUp({
+            const supabaseAuth = getAuthClient();
+            const { data: authData, error: authError } = await supabaseAuth.auth.signUp({
                 email: dadosSanitizados.email as string,
                 password: password as string,
             });
@@ -50,7 +65,8 @@ export const usuarioController = {
                 return res.status(400).json({ erros: ["E-mail e password são obrigatórios"] });
             }
 
-            const { data: authSession, error: authError } = await supabase.auth.signInWithPassword({
+            const supabaseAuth = getAuthClient();
+            const { data: authSession, error: authError } = await supabaseAuth.auth.signInWithPassword({
                 email: email.trim().toLowerCase(),
                 password: password,
             });

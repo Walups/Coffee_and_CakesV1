@@ -225,6 +225,41 @@ describe('produtoService (Camada de Serviços do Frontend)', () => {
         { signal: controller.signal }
       );
     });
+
+    it('deve atualizar produto com limpeza de imagem e desconto zerado', async () => {
+      const mockUpdateResponse = {
+        mensagem: 'Produto atualizado',
+        produto: [{ id_produto: 'prod-1', imagem_produto: '', desconto_produto: 0 }],
+      };
+      vi.mocked(api.patch).mockResolvedValueOnce({ data: mockUpdateResponse });
+
+      const result = await produtoService.atualizar('prod-1', {
+        nome_produto: 'Café Simples',
+        preco: 10.0,
+        imagem_produto: '',
+        desconto_produto: 0,
+      });
+
+      expect(api.patch).toHaveBeenCalledWith(
+        '/produto/prod-1',
+        {
+          nome_produto: 'Café Simples',
+          preco: 10.0,
+          imagem_produto: '',
+          desconto_produto: 0,
+        },
+        { signal: undefined }
+      );
+      expect(result).toEqual(mockUpdateResponse);
+    });
+
+    it('deve propagar erro quando a rota PATCH /produto/:id_produto falhar', async () => {
+      vi.mocked(api.patch).mockRejectedValueOnce(new Error('Produto não encontrado'));
+
+      await expect(
+        produtoService.atualizar('prod-inexistente', { preco: 25.0 })
+      ).rejects.toThrow('Produto não encontrado');
+    });
   });
 
   describe('softDelete (PATCH /produto/:id_produto/softdelete)', () => {

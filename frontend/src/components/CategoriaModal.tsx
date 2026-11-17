@@ -54,7 +54,8 @@ export const CategoriaModal: FC<CategoriaModalProps> = ({
           categoriaParaEditar.desconto_categoria !== undefined &&
           categoriaParaEditar.desconto_categoria !== null
         ) {
-          const perc = Math.round(categoriaParaEditar.desconto_categoria * 100);
+          const num = categoriaParaEditar.desconto_categoria;
+          const perc = num >= 1 ? Math.round(num) : Math.round(num * 100);
           descontoStr = `${perc}%`;
         }
 
@@ -105,16 +106,20 @@ export const CategoriaModal: FC<CategoriaModalProps> = ({
     try {
       const parsedDesconto = parseDesconto(data.desconto_categoria);
 
-      const payload: CategoriaPayload = {
+      const payload: Partial<CategoriaPayload> = {
         nome_categoria: data.nome_categoria.trim(),
       };
 
       if (data.img_banner && data.img_banner.trim()) {
         payload.img_banner = data.img_banner.trim();
+      } else if (isEditing) {
+        payload.img_banner = '';
       }
 
       if (parsedDesconto !== undefined) {
         payload.desconto_categoria = parsedDesconto;
+      } else if (isEditing) {
+        payload.desconto_categoria = 0;
       }
 
       if (isEditing && categoriaParaEditar) {
@@ -124,11 +129,15 @@ export const CategoriaModal: FC<CategoriaModalProps> = ({
           abortControllerRef.current.signal
         );
       } else {
-        await categoriaService.criar(payload, abortControllerRef.current.signal);
+        await categoriaService.criar(
+          payload as CategoriaPayload,
+          abortControllerRef.current.signal
+        );
       }
 
-      handleClose();
+      // Garante que onSuccess() e onClose() sejam chamados somente após a resposta de sucesso da API
       onSuccess();
+      onClose();
     } catch (err: unknown) {
       if (isApiError(err)) {
         if (err.name === 'CanceledError' || err.name === 'AbortError') return;
@@ -187,7 +196,18 @@ export const CategoriaModal: FC<CategoriaModalProps> = ({
         {/* Formulário com react-hook-form */}
         <form
           onSubmit={(e) => {
-            void handleSubmit(onSubmit)(e);
+            void handleSubmit(
+              onSubmit,
+              (formErrors) => {
+                const firstErrorMessage =
+                  formErrors.nome_categoria?.message ||
+                  formErrors.img_banner?.message ||
+                  formErrors.desconto_categoria?.message;
+                if (firstErrorMessage) {
+                  setErrorMessage(firstErrorMessage);
+                }
+              }
+            )(e);
           }}
           noValidate
           className="flex flex-col gap-4"
@@ -236,8 +256,9 @@ export const CategoriaModal: FC<CategoriaModalProps> = ({
             containerClassName="w-36 max-w-[150px]"
             {...register('desconto_categoria', {
               validate: (val) => {
-                if (!val || !val.trim()) return true;
-                const clean = String(val).replace('%', '').trim().replace(',', '.');
+                const str = val !== undefined && val !== null ? String(val).trim() : '';
+                if (!str) return true;
+                const clean = str.replace('%', '').trim().replace(',', '.');
                 const num = parseFloat(clean);
                 if (isNaN(num)) return 'Desconto inválido';
                 if (num < 0 || num >= 100) return 'Entre 0% e 99%';

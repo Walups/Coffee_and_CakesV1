@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { X } from 'lucide-react';
 import { Input } from './Input';
 import { Button } from './Button';
-import { produtoService, parseMoeda } from '../services/produtoService';
+import { produtoService, parseMoeda, formatMoeda } from '../services/produtoService';
 import { categoriaService } from '../services/categoriaService';
 import { getApiErrorMessage, isApiError } from '../services/api';
 import type { Produto, ProdutoPayload } from '../types/produto';
@@ -95,12 +95,13 @@ export const ProdutoModal: FC<ProdutoModalProps> = ({
           imagem_produto: produtoParaEditar.imagem_produto || '',
           preco:
             produtoParaEditar.preco !== undefined && produtoParaEditar.preco !== null
-              ? String(produtoParaEditar.preco)
+              ? formatMoeda(produtoParaEditar.preco)
               : '',
           desconto_produto:
             produtoParaEditar.desconto_produto !== undefined &&
-            produtoParaEditar.desconto_produto !== null
-              ? String(produtoParaEditar.desconto_produto)
+            produtoParaEditar.desconto_produto !== null &&
+            produtoParaEditar.desconto_produto > 0
+              ? formatMoeda(produtoParaEditar.desconto_produto)
               : '',
           id_categoria: produtoParaEditar.id_categoria || '',
           descricao: produtoParaEditar.descricao || '',
@@ -167,22 +168,27 @@ export const ProdutoModal: FC<ProdutoModalProps> = ({
         return;
       }
 
-      const payload: ProdutoPayload = {
+      const payload: Partial<ProdutoPayload> = {
         nome_produto: data.nome_produto.trim(),
         preco: parsedPreco,
-        imagem_produto: data.imagem_produto.trim(),
       };
+
+      if (data.imagem_produto && data.imagem_produto.trim()) {
+        payload.imagem_produto = data.imagem_produto.trim();
+      } else if (isEditing) {
+        payload.imagem_produto = '';
+      }
 
       if (parsedDesconto !== undefined) {
         payload.desconto_produto = parsedDesconto;
+      } else if (isEditing) {
+        payload.desconto_produto = 0;
       }
 
       if (data.descricao && data.descricao.trim()) {
         payload.descricao = data.descricao.trim();
-      }
-
-      if (data.id_categoria && data.id_categoria.trim()) {
-        payload.id_categoria = data.id_categoria.trim();
+      } else if (isEditing) {
+        payload.descricao = '';
       }
 
       if (isEditing && produtoParaEditar) {
@@ -192,11 +198,15 @@ export const ProdutoModal: FC<ProdutoModalProps> = ({
           abortControllerRef.current.signal
         );
       } else {
-        await produtoService.criar(payload, abortControllerRef.current.signal);
+        await produtoService.criar(
+          payload as ProdutoPayload,
+          abortControllerRef.current.signal
+        );
       }
 
-      handleClose();
+      // Garante que onSuccess() e onClose() sejam chamados somente após a resposta de sucesso da API
       onSuccess();
+      onClose();
     } catch (err: unknown) {
       if (isApiError(err)) {
         if (err.name === 'CanceledError' || err.name === 'AbortError') return;
@@ -255,7 +265,15 @@ export const ProdutoModal: FC<ProdutoModalProps> = ({
         {/* Formulário com react-hook-form */}
         <form
           onSubmit={(e) => {
-            void handleSubmit(onSubmit)(e);
+            void handleSubmit(
+              onSubmit,
+              (formErrors) => {
+                const firstError = Object.values(formErrors)[0]?.message;
+                if (firstError) {
+                  setErrorMessage(firstError);
+                }
+              }
+            )(e);
           }}
           noValidate
           className="flex flex-col gap-4"
@@ -307,8 +325,9 @@ export const ProdutoModal: FC<ProdutoModalProps> = ({
               {...register('preco', {
                 required: 'Preço é obrigatório',
                 validate: (val) => {
-                  if (!val || !val.trim()) return 'Preço é obrigatório';
-                  const parsed = parseMoeda(val);
+                  const str = val !== undefined && val !== null ? String(val).trim() : '';
+                  if (!str) return 'Preço é obrigatório';
+                  const parsed = parseMoeda(str);
                   if (parsed === undefined || isNaN(parsed)) return 'Preço inválido';
                   if (parsed <= 0) return 'Deve ser maior que 0';
                   return true;
@@ -324,8 +343,9 @@ export const ProdutoModal: FC<ProdutoModalProps> = ({
               containerClassName="w-full"
               {...register('desconto_produto', {
                 validate: (val) => {
-                  if (!val || !val.trim()) return true;
-                  const parsed = parseMoeda(val);
+                  const str = val !== undefined && val !== null ? String(val).trim() : '';
+                  if (!str) return true;
+                  const parsed = parseMoeda(str);
                   if (parsed === undefined || isNaN(parsed)) return 'Desconto inválido';
                   if (parsed < 0) return 'Não pode ser negativo';
                   const precoAtual = parseMoeda(getValues('preco'));
@@ -370,10 +390,6 @@ export const ProdutoModal: FC<ProdutoModalProps> = ({
                 maxLength: {
                   value: 255,
                   message: 'Observações deve ter no máximo 255 caracteres',
-                },
-                validate: (val) => {
-                  if (!val || !val.trim()) return 'Observação é obrigatória';
-                  return true;
                 },
               })}
             />

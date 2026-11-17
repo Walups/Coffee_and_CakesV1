@@ -86,6 +86,54 @@ describe('pedidoService (Camada de Serviços de Pedidos)', () => {
     });
   });
 
+  describe('listarMeus (GET /pedidos/meus)', () => {
+    it('deve chamar GET /pedidos/meus e retornar a lista de pedidos do cliente', async () => {
+      const mockMeusPedidos: Pedido[] = [
+        {
+          id_pedido: 'pedido-meu-1',
+          status: 'em_preparo',
+          usuario: { nome_completo: 'Cliente Teste' },
+          produto_pedido: [],
+        },
+      ];
+
+      vi.mocked(api.get).mockResolvedValueOnce({ data: mockMeusPedidos });
+
+      const result = await pedidoService.listarMeus();
+
+      expect(api.get).toHaveBeenCalledWith('/pedidos/meus', { signal: undefined });
+      expect(result).toEqual(mockMeusPedidos);
+    });
+
+    it('deve tentar fallback para /pedido/pedidos/meus quando rota /pedidos/meus responder 404', async () => {
+      const error404 = {
+        name: 'AxiosError',
+        message: 'Request failed with status code 404',
+        isAxiosError: true,
+        response: { status: 404, data: { erro: 'Not Found' } },
+      };
+
+      const mockFallbackPedidos: Pedido[] = [
+        {
+          id_pedido: 'pedido-fallback-1',
+          status: 'aguardando',
+          usuario: { nome_completo: 'Cliente Fallback' },
+          produto_pedido: [],
+        },
+      ];
+
+      vi.mocked(api.get)
+        .mockRejectedValueOnce(error404)
+        .mockResolvedValueOnce({ data: mockFallbackPedidos });
+
+      const result = await pedidoService.listarMeus();
+
+      expect(api.get).toHaveBeenNthCalledWith(1, '/pedidos/meus', { signal: undefined });
+      expect(api.get).toHaveBeenNthCalledWith(2, '/pedido/pedidos/meus', { signal: undefined });
+      expect(result).toEqual(mockFallbackPedidos);
+    });
+  });
+
   describe('atualizarStatus (PATCH /pedidos/:id_pedido)', () => {
     it('deve chamar PATCH /pedidos/:id_pedido com { status }', async () => {
       const mockResponse = {

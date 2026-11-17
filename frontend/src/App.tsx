@@ -5,7 +5,7 @@ import { EmConstrucao } from './pages/em_construcao';
 import { AdminPage } from './pages/admin';
 import { CategoriasPage } from './pages/CategoriasPage';
 import { ProdutosPage } from './pages/ProdutosPage';
-import { ClientePage } from './pages/cliente';
+import { HomeCliente } from './pages/HomeCliente';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
 import { usuarioService, getStoredUsuario } from './services/usuarioService';
@@ -85,7 +85,7 @@ export function App() {
   if (currentPage === 'cliente') {
     return (
       <ProtectedRoute onNavigate={navigateTo}>
-        <ClientePage onLogout={handleLogout} />
+        <HomeCliente onLogout={handleLogout} onNavigate={navigateTo} />
       </ProtectedRoute>
     );
   }

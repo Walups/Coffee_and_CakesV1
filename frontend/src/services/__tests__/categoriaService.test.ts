@@ -197,6 +197,56 @@ describe('categoriaService (Camada de Serviços do Frontend)', () => {
         { signal: controller.signal }
       );
     });
+
+    it('deve atualizar apenas o desconto de uma categoria já existente', async () => {
+      const mockResponse = {
+        mensagem: 'Categoria atualizada',
+        categoria: [{ id_categoria: 'cat-uuid-1', desconto_categoria: 0.15 }],
+      };
+      vi.mocked(api.patch).mockResolvedValueOnce({ data: mockResponse });
+
+      const result = await categoriaService.atualizar('cat-uuid-1', { desconto_categoria: 0.15 });
+
+      expect(api.patch).toHaveBeenCalledWith(
+        '/categoria/cat-uuid-1',
+        { desconto_categoria: 0.15 },
+        { signal: undefined }
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('deve enviar payload para limpar banner e zerar desconto de categoria já criada', async () => {
+      const mockResponse = {
+        mensagem: 'Categoria atualizada',
+        categoria: [{ id_categoria: 'cat-uuid-1', img_banner: '', desconto_categoria: 0 }],
+      };
+      vi.mocked(api.patch).mockResolvedValueOnce({ data: mockResponse });
+
+      const result = await categoriaService.atualizar('cat-uuid-1', {
+        nome_categoria: 'Cafés Tradicionais',
+        img_banner: '',
+        desconto_categoria: 0,
+      });
+
+      expect(api.patch).toHaveBeenCalledWith(
+        '/categoria/cat-uuid-1',
+        {
+          nome_categoria: 'Cafés Tradicionais',
+          img_banner: '',
+          desconto_categoria: 0,
+        },
+        { signal: undefined }
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('deve propagar erro quando a atualização da categoria falhar no backend (ex: 400 ou 404)', async () => {
+      vi.mocked(api.patch).mockRejectedValueOnce(new Error('Categoria não encontrada'));
+
+      await expect(
+        categoriaService.atualizar('id-inexistente', { nome_categoria: 'Nova Categoria' })
+      ).rejects.toThrow('Categoria não encontrada');
+    });
   });
 
   describe('softDelete (PATCH /categoria/:id_categoria/softdelete)', () => {

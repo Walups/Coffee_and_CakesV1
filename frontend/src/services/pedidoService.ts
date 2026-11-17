@@ -61,6 +61,23 @@ export const pedidoService = {
   },
 
   /**
+   * Lista os pedidos do usuário logado (GET /pedidos/meus)
+   */
+  async listarMeus(signal?: AbortSignal): Promise<Pedido[]> {
+    try {
+      const response = await api.get<Pedido[]>('/pedidos/meus', { signal });
+      return response.data;
+    } catch (err: unknown) {
+      if (isApiError(err) && err.response?.status === 404) {
+        // Fallback transparente caso o router backend esteja montado com prefixo /pedido
+        const fallbackResponse = await api.get<Pedido[]>('/pedido/pedidos/meus', { signal });
+        return fallbackResponse.data;
+      }
+      throw err;
+    }
+  },
+
+  /**
    * Atualiza o status de um pedido (PATCH /pedidos/:id_pedido) enviando { status }
    */
   async atualizarStatus(
