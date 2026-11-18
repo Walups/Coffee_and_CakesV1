@@ -4,6 +4,8 @@ const limitDB = {
     imagem_produto: 255
 };
 
+const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export const stringClear = (value: unknown): string => {
   if (typeof value !== 'string') {
     return '';
@@ -90,13 +92,33 @@ export const produtoValidatorsPayload = (body: Record<string, unknown>, isUpdate
         }
     }
 
-    if (isUpdate && Object.keys(dadosLimpos).length === 0 && erros.length === 0) {
+    let id_categoria: string | null | undefined = undefined;
+    if (body && 'id_categoria' in body) {
+        const rawCategoria = body.id_categoria;
+        if (rawCategoria === null || rawCategoria === '') {
+            id_categoria = null;
+        } else if (typeof rawCategoria === 'string') {
+            const limpo = stringClear(rawCategoria);
+            if (limpo === '') {
+                id_categoria = null;
+            } else if (!uuidRegex.test(limpo)) {
+                erros.push("id_categoria deve ser um UUID válido");
+            } else {
+                id_categoria = limpo;
+            }
+        } else {
+            erros.push("id_categoria deve ser uma string ou nulo");
+        }
+    }
+
+    if (isUpdate && Object.keys(dadosLimpos).length === 0 && id_categoria === undefined && erros.length === 0) {
         erros.push("Nenhum campo válido foi fornecido para atualização");
     }
 
     return {
         valido: erros.length === 0,
         erros,
-        dadosLimpos
+        dadosLimpos,
+        id_categoria
     };
 };

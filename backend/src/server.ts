@@ -6,15 +6,19 @@ import produtoRoutes from './routes/produtoRoutes';
 import usuarioRoutes from './routes/usuarioRoutes';
 import enderecoRoutes from './routes/enderecoRoutes';
 import categoriaRoutes from './routes/categoriaRoutes';
+import categoriaXProdutoRoutes from './routes/categoriaXProdutoRoutes';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(pedidoRoutes);
 app.use('/pedido', pedidoRoutes);
 app.use('/produto', produtoRoutes);
 app.use('/usuario', usuarioRoutes);
 app.use('/endereco', enderecoRoutes);
 app.use('/categoria', categoriaRoutes);
+app.use('/categoria-produto', categoriaXProdutoRoutes);
+app.use('/categoria_x_produto', categoriaXProdutoRoutes);
 
 app.get('/', (req: Request, res: Response) => {
     res.json({ 

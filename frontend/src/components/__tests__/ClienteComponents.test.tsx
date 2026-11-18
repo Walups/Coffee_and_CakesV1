@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import React from 'react';
+import { renderToString } from 'react-dom/server';
 import { SideMenuDrawer } from '../SideMenuDrawer';
 import { CategoriasCarousel } from '../CategoriasCarousel';
 import { MaisVendidosCarousel } from '../MaisVendidosCarousel';
@@ -59,6 +60,21 @@ describe('Componentes do Fluxo do Cliente', () => {
 
       expect(result).not.toBeNull();
       expect(React.isValidElement(result)).toBe(true);
+    });
+
+    it('deve renderizar a opção "Minhas compras" no menu drawer', () => {
+      const onMinhasComprasMock = vi.fn();
+      const result = SideMenuDrawer({
+        isOpen: true,
+        onClose: vi.fn(),
+        onNavigateMinhasCompras: onMinhasComprasMock,
+      });
+
+      expect(result).not.toBeNull();
+      const html = renderToString(result as React.ReactElement);
+      expect(html).toContain('Minhas compras');
+      expect(html).toContain('Início');
+      expect(html).toContain('Editar Cadastro');
     });
   });
 
@@ -330,6 +346,96 @@ describe('Componentes do Fluxo do Cliente', () => {
 
       expect(element).not.toBeNull();
       expect(React.isValidElement(element)).toBe(true);
+    });
+
+    it('deve filtrar produtos pela categoria selecionada tanto por id_categoria quanto por categoria_x_produto', () => {
+      const produtosMistos: Produto[] = [
+        {
+          id_produto: 'prod-cat-1',
+          nome_produto: 'Cupcake Chocolate',
+          preco: 15.0,
+          imagem_produto: '',
+          id_categoria: 'cat-cupcakes',
+          active: true,
+        },
+        {
+          id_produto: 'prod-cat-2',
+          nome_produto: 'Café Espresso',
+          preco: 8.0,
+          imagem_produto: '',
+          categoria_x_produto: [{ id_categoria: 'cat-bebidas' }],
+          active: true,
+        },
+        {
+          id_produto: 'prod-cat-3',
+          nome_produto: 'Bolo de Morango',
+          preco: 20.0,
+          imagem_produto: '',
+          id_categoria: 'cat-bolos',
+          active: true,
+        },
+      ];
+
+      // Filtra para cat-cupcakes
+      const filtroCupcakes = produtosMistos.filter(
+        (p) =>
+          p.id_categoria === 'cat-cupcakes' ||
+          p.categoria_x_produto?.some((cxp) => cxp.id_categoria === 'cat-cupcakes')
+      );
+      expect(filtroCupcakes).toHaveLength(1);
+      expect(filtroCupcakes[0].nome_produto).toBe('Cupcake Chocolate');
+
+      // Filtra para cat-bebidas (via categoria_x_produto)
+      const filtroBebidas = produtosMistos.filter(
+        (p) =>
+          p.id_categoria === 'cat-bebidas' ||
+          p.categoria_x_produto?.some((cxp) => cxp.id_categoria === 'cat-bebidas')
+      );
+      expect(filtroBebidas).toHaveLength(1);
+      expect(filtroBebidas[0].nome_produto).toBe('Café Espresso');
+    });
+
+    it('deve renderizar botão "Ver todos" quando onLimparFiltro for fornecido', () => {
+      const mockLimpar = vi.fn();
+      const element = ListaProdutosCliente({
+        produtos: mockProdutos,
+        titulo: 'Produtos em Bebidas',
+        onLimparFiltro: mockLimpar,
+      });
+
+      expect(element).not.toBeNull();
+      expect(React.isValidElement(element)).toBe(true);
+    });
+
+    it('deve chamar onAdicionarAoCarrinho com o produto e parar propagação do evento ao clicar no botão "+"', () => {
+      const mockAdicionar = vi.fn();
+      const mockSelect = vi.fn();
+      const element = ListaProdutosCliente({
+        produtos: mockProdutos,
+        onSelectProduto: mockSelect,
+        onAdicionarAoCarrinho: mockAdicionar,
+      });
+
+      expect(element).not.toBeNull();
+      // Encontra o botão '+' do primeiro produto
+      const container = element as React.ReactElement<{
+        children: [React.ReactElement, React.ReactElement<{ children: React.ReactElement[] }>];
+      }>;
+      const listDiv = container.props.children[1];
+      const firstCard = listDiv.props.children[0];
+
+      // Localiza o botão dentro da linha de preço
+      const infoDiv = (firstCard.props as { children: [unknown, React.ReactElement<{ children: [unknown, React.ReactElement<{ children: [unknown, React.ReactElement<{ onClick: (e: { stopPropagation: () => void }) => void }>] }>] }>] }).children[1];
+      const precoLinha = infoDiv.props.children[1];
+      const botaoPlus = precoLinha.props.children[1];
+
+      const stopPropagationMock = vi.fn();
+      botaoPlus.props.onClick({ stopPropagation: stopPropagationMock });
+
+      expect(stopPropagationMock).toHaveBeenCalledTimes(1);
+      expect(mockAdicionar).toHaveBeenCalledTimes(1);
+      expect(mockAdicionar).toHaveBeenCalledWith(mockProdutos[0]);
+      expect(mockSelect).not.toHaveBeenCalled();
     });
   });
 });

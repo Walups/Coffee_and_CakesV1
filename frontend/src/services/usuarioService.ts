@@ -58,6 +58,39 @@ export interface CadastroCompletoResponse {
   endereco: EnderecoResponse[] | EnderecoResponse;
 }
 
+export interface UserProfileData {
+  nome_completo: string;
+  email: string;
+  rua?: string;
+  numero?: string;
+  cep?: string;
+  complemento?: string;
+}
+
+export function getUserProfileStorageKey(userId?: string): string {
+  return `@coffee-cakes:user-profile-${userId || 'default'}`;
+}
+
+export function getStoredUserProfile(userId?: string): UserProfileData | null {
+  try {
+    const key = getUserProfileStorageKey(userId);
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    return JSON.parse(raw) as UserProfileData;
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredUserProfile(userId: string | undefined, data: UserProfileData): void {
+  try {
+    const key = getUserProfileStorageKey(userId);
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch {
+    // fallback se localStorage estiver indisponível
+  }
+}
+
 export function getStoredToken(): string | null {
   try {
     return localStorage.getItem('token');
@@ -117,6 +150,33 @@ export const usuarioService = {
   isAuthenticated,
   isAdmin,
   logout,
+  getUserProfileStorageKey,
+  getStoredUserProfile,
+  setStoredUserProfile,
+
+  async getMe(signal?: AbortSignal): Promise<UsuarioResponse> {
+    const response = await api.get<UsuarioResponse>('/usuario/me', { signal });
+    return response.data;
+  },
+
+  async updateProfile(
+    id_usuario: string,
+    payload: { nome_completo?: string },
+    signal?: AbortSignal
+  ): Promise<{ mensagem: string; usuario: UsuarioResponse }> {
+    const response = await api.patch<{ mensagem: string; usuario: UsuarioResponse }>(
+      `/usuario/${id_usuario}`,
+      payload,
+      { signal }
+    );
+    if (response.data?.usuario) {
+      const current = getStoredUsuario();
+      if (current) {
+        localStorage.setItem('usuario', JSON.stringify({ ...current, ...response.data.usuario }));
+      }
+    }
+    return response.data;
+  },
 
   async login(payload: LoginPayload, signal?: AbortSignal): Promise<LoginResponse> {
     const response = await api.post<LoginResponse>('/usuario/login', payload, { signal });

@@ -9,6 +9,7 @@ interface ListaProdutosClienteProps {
   titulo?: string;
   onSelectProduto?: (produto: Produto) => void;
   onAdicionarAoCarrinho?: (produto: Produto) => void;
+  onLimparFiltro?: () => void;
 }
 
 export const ListaProdutosCliente: FC<ListaProdutosClienteProps> = ({
@@ -16,6 +17,7 @@ export const ListaProdutosCliente: FC<ListaProdutosClienteProps> = ({
   titulo = 'Nosso Cardápio',
   onSelectProduto,
   onAdicionarAoCarrinho,
+  onLimparFiltro,
 }) => {
   // Filtra produtos ativos
   const produtosAtivos = produtos.filter((prod) => prod.active !== false);
@@ -30,16 +32,43 @@ export const ListaProdutosCliente: FC<ListaProdutosClienteProps> = ({
 
   if (produtosAtivos.length === 0) {
     return (
-      <div className="w-full px-4 py-8 text-center text-zinc-500 text-sm">
-        Nenhum produto disponível no momento.
-      </div>
+      <section className="w-full px-4 py-3">
+        {titulo && (
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-bold text-[#5B2418]">{titulo}</h2>
+            {onLimparFiltro && (
+              <button
+                type="button"
+                onClick={onLimparFiltro}
+                className="text-xs font-semibold text-[#5B2418] underline hover:text-[#481c13] cursor-pointer"
+              >
+                Ver todos
+              </button>
+            )}
+          </div>
+        )}
+        <div className="w-full py-8 text-center text-zinc-500 text-sm">
+          Nenhum produto disponível nesta categoria.
+        </div>
+      </section>
     );
   }
 
   return (
     <section className="w-full px-4 py-3">
       {titulo && (
-        <h2 className="text-lg font-bold text-[#5B2418] mb-3">{titulo}</h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-bold text-[#5B2418]">{titulo}</h2>
+          {onLimparFiltro && (
+            <button
+              type="button"
+              onClick={onLimparFiltro}
+              className="text-xs font-semibold text-[#5B2418] underline hover:text-[#481c13] cursor-pointer"
+            >
+              Ver todos
+            </button>
+          )}
+        </div>
       )}
 
       <div className="flex flex-col gap-3">

@@ -6,6 +6,7 @@ export interface Produto {
   descricao?: string | null;
   imagem_produto: string;
   id_categoria?: string | null;
+  categoria_x_produto?: Array<{ id_categoria: string }>;
   active?: boolean;
   created_at?: string;
   updated_at?: string;

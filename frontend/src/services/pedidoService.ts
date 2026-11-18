@@ -11,7 +11,13 @@
  * ⚠️  NUNCA importe `axios` diretamente neste service.
  */
 import { api, isApiError } from './api';
-import type { Pedido, PedidoUpdateResponse, StatusPedido } from '../types/pedido';
+import type {
+  Pedido,
+  PedidoUpdateResponse,
+  StatusPedido,
+  CriarPedidoPayload,
+  CriarPedidoResponse,
+} from '../types/pedido';
 
 /**
  * Formata o nome completo do cliente para exibir apenas o primeiro nome + primeiro sobrenome.
@@ -27,22 +33,41 @@ export function formatarNomeCliente(nomeCompleto?: string | null): string {
 /**
  * Retorna o rótulo amigável para o status do pedido.
  */
-export function formatarStatus(status: StatusPedido): string {
-  switch (status) {
+export function formatarStatus(status: StatusPedido | string): string {
+  const normalizado = status ? String(status).toLowerCase().replace(/\s+/g, '_') : '';
+  switch (normalizado) {
     case 'aguardando':
       return 'Aguardando';
     case 'em_preparo':
       return 'Em preparo';
     case 'pronto':
       return 'Pronto';
+    case 'entregue':
+      return 'Entregue';
     case 'cancelado':
       return 'Cancelado';
     default:
-      return status;
+      return status || 'Aguardando';
   }
 }
 
 export const pedidoService = {
+  /**
+   * Envia um novo pedido para a API (POST /pedidos)
+   */
+  async criar(payload: CriarPedidoPayload, signal?: AbortSignal): Promise<CriarPedidoResponse> {
+    try {
+      const response = await api.post<CriarPedidoResponse>('/pedidos', payload, { signal });
+      return response.data;
+    } catch (err: unknown) {
+      if (isApiError(err) && err.response?.status === 404) {
+        // Fallback transparente caso o router backend esteja montado com prefixo /pedido
+        const fallbackResponse = await api.post<CriarPedidoResponse>('/pedido/pedidos', payload, { signal });
+        return fallbackResponse.data;
+      }
+      throw err;
+    }
+  },
   /**
    * Lista todos os pedidos cadastrados (GET /pedidos)
    */

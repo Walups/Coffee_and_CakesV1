@@ -6,9 +6,11 @@ import { AdminPage } from './pages/admin';
 import { CategoriasPage } from './pages/CategoriasPage';
 import { ProdutosPage } from './pages/ProdutosPage';
 import { HomeCliente } from './pages/HomeCliente';
+import { PerfilCliente } from './pages/PerfilCliente';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AdminRoute } from './components/AdminRoute';
 import { usuarioService, getStoredUsuario } from './services/usuarioService';
+import { CartProvider } from './contexts/CartContext';
 
 export function App() {
   const getInitialPage = () => {
@@ -17,6 +19,8 @@ export function App() {
     if (path === '/admin/produtos') return 'admin-produtos';
     if (path === '/admin') return 'admin';
     if (path === '/cliente') return 'cliente';
+    if (path === '/cliente/pedidos') return 'cliente-pedidos';
+    if (path === '/perfil' || path === '/cadastro/editar' || path === '/cliente/perfil') return 'perfil';
     if (path === '/register') return 'register';
     if (path === '/forgot-password') return 'forgot-password';
     if (path === '/') {
@@ -44,6 +48,8 @@ export function App() {
     else if (path === '/admin/produtos') setCurrentPage('admin-produtos');
     else if (path === '/admin') setCurrentPage('admin');
     else if (path === '/cliente') setCurrentPage('cliente');
+    else if (path === '/cliente/pedidos') setCurrentPage('cliente-pedidos');
+    else if (path === '/perfil' || path === '/cadastro/editar' || path === '/cliente/perfil') setCurrentPage('perfil');
     else if (path === '/register') setCurrentPage('register');
     else if (path === '/forgot-password') setCurrentPage('forgot-password');
     else if (path === '/') {
@@ -58,53 +64,69 @@ export function App() {
     usuarioService.logout(navigateTo);
   };
 
-  if (currentPage === 'admin') {
+  const renderCurrentPage = () => {
+    if (currentPage === 'admin') {
+      return (
+        <AdminRoute onNavigate={navigateTo}>
+          <AdminPage onLogout={handleLogout} onNavigate={navigateTo} />
+        </AdminRoute>
+      );
+    }
+
+    if (currentPage === 'admin-categorias') {
+      return (
+        <AdminRoute onNavigate={navigateTo}>
+          <CategoriasPage onLogout={handleLogout} onNavigate={navigateTo} />
+        </AdminRoute>
+      );
+    }
+
+    if (currentPage === 'admin-produtos') {
+      return (
+        <AdminRoute onNavigate={navigateTo}>
+          <ProdutosPage onLogout={handleLogout} onNavigate={navigateTo} />
+        </AdminRoute>
+      );
+    }
+
+    if (currentPage === 'cliente' || currentPage === 'cliente-pedidos') {
+      return (
+        <ProtectedRoute onNavigate={navigateTo}>
+          <HomeCliente
+            onLogout={handleLogout}
+            onNavigate={navigateTo}
+            initialAbrirPedidos={currentPage === 'cliente-pedidos'}
+          />
+        </ProtectedRoute>
+      );
+    }
+
+    if (currentPage === 'perfil') {
+      return (
+        <ProtectedRoute onNavigate={navigateTo}>
+          <PerfilCliente onLogout={handleLogout} onNavigate={navigateTo} />
+        </ProtectedRoute>
+      );
+    }
+
+    if (currentPage === 'register') {
+      return <Register onBackToLogin={() => navigateTo('/login')} />;
+    }
+
+    if (currentPage === 'forgot-password') {
+      return <EmConstrucao onBackToLogin={() => navigateTo('/login')} />;
+    }
+
     return (
-      <AdminRoute onNavigate={navigateTo}>
-        <AdminPage onLogout={handleLogout} onNavigate={navigateTo} />
-      </AdminRoute>
+      <Login
+        onNavigateRegister={() => navigateTo('/register')}
+        onNavigateForgotPassword={() => navigateTo('/forgot-password')}
+        onNavigate={navigateTo}
+      />
     );
-  }
+  };
 
-  if (currentPage === 'admin-categorias') {
-    return (
-      <AdminRoute onNavigate={navigateTo}>
-        <CategoriasPage onLogout={handleLogout} onNavigate={navigateTo} />
-      </AdminRoute>
-    );
-  }
-
-  if (currentPage === 'admin-produtos') {
-    return (
-      <AdminRoute onNavigate={navigateTo}>
-        <ProdutosPage onLogout={handleLogout} onNavigate={navigateTo} />
-      </AdminRoute>
-    );
-  }
-
-  if (currentPage === 'cliente') {
-    return (
-      <ProtectedRoute onNavigate={navigateTo}>
-        <HomeCliente onLogout={handleLogout} onNavigate={navigateTo} />
-      </ProtectedRoute>
-    );
-  }
-
-  if (currentPage === 'register') {
-    return <Register onBackToLogin={() => navigateTo('/login')} />;
-  }
-
-  if (currentPage === 'forgot-password') {
-    return <EmConstrucao onBackToLogin={() => navigateTo('/login')} />;
-  }
-
-  return (
-    <Login
-      onNavigateRegister={() => navigateTo('/register')}
-      onNavigateForgotPassword={() => navigateTo('/forgot-password')}
-      onNavigate={navigateTo}
-    />
-  );
+  return <CartProvider>{renderCurrentPage()}</CartProvider>;
 }
 
 export default App;

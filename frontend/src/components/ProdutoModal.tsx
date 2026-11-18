@@ -103,7 +103,10 @@ export const ProdutoModal: FC<ProdutoModalProps> = ({
             produtoParaEditar.desconto_produto > 0
               ? formatMoeda(produtoParaEditar.desconto_produto)
               : '',
-          id_categoria: produtoParaEditar.id_categoria || '',
+          id_categoria:
+            produtoParaEditar.id_categoria ||
+            produtoParaEditar.categoria_x_produto?.[0]?.id_categoria ||
+            '',
           descricao: produtoParaEditar.descricao || '',
         });
       } else {
@@ -189,6 +192,12 @@ export const ProdutoModal: FC<ProdutoModalProps> = ({
         payload.descricao = data.descricao.trim();
       } else if (isEditing) {
         payload.descricao = '';
+      }
+
+      if (data.id_categoria && data.id_categoria.trim() !== '') {
+        payload.id_categoria = data.id_categoria.trim();
+      } else if (isEditing) {
+        payload.id_categoria = null;
       }
 
       if (isEditing && produtoParaEditar) {

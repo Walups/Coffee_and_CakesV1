@@ -203,7 +203,50 @@ describe('pedidoService (Camada de Serviços de Pedidos)', () => {
       expect(formatarStatus('aguardando')).toBe('Aguardando');
       expect(formatarStatus('em_preparo')).toBe('Em preparo');
       expect(formatarStatus('pronto')).toBe('Pronto');
+      expect(formatarStatus('entregue')).toBe('Entregue');
       expect(formatarStatus('cancelado')).toBe('Cancelado');
+    });
+  });
+
+  describe('criar (POST /pedidos)', () => {
+    it('deve enviar payload no formato exigido pelo pedidoValidatorsPayload e retornar o pedido criado', async () => {
+      const mockResponse = {
+        data: {
+          mensagem: 'Pedido realizado com sucesso!',
+          pedido: {
+            id_pedido: 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d',
+            status: 'aguardando',
+            valor_total: 35.5,
+            forma_pagamento: 'dinheiro',
+            id_endereco: 'e1e2e3e4-e5f6-4a7b-8c9d-0e1f2a3b4c5d',
+            produto_pedido: [],
+          },
+        },
+      };
+
+      vi.mocked(api.post).mockResolvedValueOnce(mockResponse);
+
+      const payload = {
+        id_endereco: 'e1e2e3e4-e5f6-4a7b-8c9d-0e1f2a3b4c5d',
+        status: 'aguardando' as const,
+        valor_total: 35.5,
+        forma_pagamento: 'dinheiro',
+        itens: [
+          {
+            id_produto: 'p1p2p3p4-e5f6-4a7b-8c9d-0e1f2a3b4c5d',
+            quant: 2,
+            valor_produto_pedido: 17.75,
+            observacao: null,
+          },
+        ],
+      };
+
+      const result = await pedidoService.criar(payload);
+
+      expect(api.post).toHaveBeenCalledTimes(1);
+      expect(api.post).toHaveBeenCalledWith('/pedidos', payload, { signal: undefined });
+      expect(result.mensagem).toBe('Pedido realizado com sucesso!');
+      expect(result.pedido.id_pedido).toBe('a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d');
     });
   });
 
