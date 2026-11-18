@@ -16,9 +16,39 @@ A ideia é que aplicação seja desenvolvida em colaboração com a IA e não ge
  * Banco de dados: PostgreSql hospedado no Supabase
  * Frontend: ReactJS
 
-## Instruções de uso
+## 🚀 Instruções de Instalação e Uso
 
-Em construção ...
+Certifique-se de ter o **Node.js (v18 ou superior)** e o **npm** instalados em sua máquina.
+
+### 1. Configuração do Banco de Dados (Supabase / PostgreSQL)
+Os scripts SQL para replicar a estrutura e a massa de dados inicial do sistema estão na pasta `database/`:
+1. Crie um projeto gratuito no [Supabase](https://supabase.com/).
+2. No menu lateral, acesse **SQL Editor** -> **New query**.
+3. Execute o script `database/schema.sql` para criar as tabelas e seus relacionamentos.
+4. Em seguida, execute o script `database/seed_dados.sql` para popular as categorias e produtos iniciais.
+5. Para acessar o painel administrativo pela primeira vez, crie uma conta pela interface da aplicação e, na tabela `usuario` no **Table Editor** do Supabase, altere a coluna `role` desse usuário de `cliente` para `admin`.
+
+### 2. Configuração das Variáveis de Ambiente (`.env`)
+Crie os arquivos `.env` nas respectivas pastas utilizando as credenciais disponíveis no painel do seu projeto Supabase (**Project Settings -> API**):
+
+**Back-end (`backend/.env`):**
+PORT=3000
+SUPABASE_URL=https://seu-projeto.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=sua_chave_service_role_aqui
+JWT_SECRET=sua_chave_secreta_jwt
+
+> ⚠️ **Importante:** A chave `service_role` deve ser utilizada exclusivamente no back-end para permitir operações administrativas de persistência, nunca sendo exposta no front-end.
+
+**Front-end (`frontend/.env`):**
+VITE_API_URL=http://localhost:3000
+VITE_SUPABASE_URL=https://seu-projeto.supabase.co
+VITE_SUPABASE_ANON_KEY=sua_chave_anon_public_aqui
+
+### 3. Instalação e Execução (Ambiente Único)
+O projeto está configurado para instalar dependências e iniciar **back-end e front-end simultaneamente** a partir da raiz do repositório:
+1. Na pasta raiz do projeto, instale as dependências com `npm install`.
+2. Inicie a aplicação completa (API + Interface Web) com `npm run dev`.
+3. Acesse a aplicação no navegador pelo endereço local exibido no terminal (por padrão, `http://localhost:5173`).
 
 ## Diário do projeto
 
@@ -38,6 +68,5 @@ Hoje eu também entendi que preciso sanitizar todos os dados antes de mandar par
 
 * 04/11/2026 01:23: Eu sei que eu disse que faria tudo na base do vibecoding mas vontade de aprender e entender como o código funciona é um pouco mais forte. Para hoje temos os 3 primeiros validadores, todos escritos a mão tendo o validador de usuário como padrão e a IA como para codereview. Quanto aos testes, a tabela pedido passou por todos os testes manuais de erro, mas não permitiu um post devido as regras de chave estrangeira no Postgres.
 
-Para amanhã a ideia é gerar o restante dos validadores com a IA usando o padrão já consolidado como referencia 
 
 
